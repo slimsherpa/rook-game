@@ -1,0 +1,92 @@
+<div class="player-hand">
+    <div class="player-info">
+        <h2 class="player-name">
+          {{ player.name }} ({{ player.seat }})
+          <span *ngIf="isDealer" class="dealer-indicator">DEALER</span>
+          <span *ngIf="isBidWinner()" class="bid-winner-indicator">{{ player.currentBid }}</span>
+        </h2>
+        
+        <div *ngIf="tricksTaken > 0" class="tricks-indicator">
+            <span class="material-symbols-outlined upside-down">playing_cards</span> × {{ tricksTaken }}
+          </div>
+    </div>
+  
+    <div class="hand-container">
+        <div class="hand" cdkDropList cdkDropListOrientation="horizontal" (cdkDropListDropped)="drop($event)">
+          <div class="card-slot" *ngFor="let card of player.hand; let i = index" cdkDrag [cdkDragData]="card">
+            <app-card 
+              [card]="card" 
+              [selectable]="isCardSelectable(card)"
+              [selected]="isCardSelected(card)"
+              [isTrump]="isTrumpCard(card)"
+              (click)="handleCardClick(card)"
+              [ngStyle]="{'opacity': currentPhase === 'PlayingTricks' && !isCardPlayable(card) ? 0.5 : 1}"
+              [ngClass]="{'disabled': currentPhase === 'PlayingTricks' && !isCardPlayable(card)}">
+            </app-card>
+            <div class="card-placeholder" *cdkDragPlaceholder></div>
+          </div>
+        </div>
+      </div>
+  
+    <div class="action-buttons" *ngIf="hasVisibleActionButtons()">
+      <button *ngIf="isDealer && currentPhase === 'Dealing'" 
+              class="cyberpunk-button"
+              (click)="dealCards()">
+        DEAL CARDS
+      </button>
+      <button *ngIf="isDealer && currentPhase === 'Bidding'" 
+              class="cyberpunk-button redeal"
+              (click)="redealCards()">
+        REDEAL
+      </button>
+      <button *ngIf="currentPhase === 'SelectingGoDown' && player.name === gameService.getGameMetadata().bidWinner"
+              class="cyberpunk-button"
+              [disabled]="selectedCards.length !== 4"
+              (click)="setGoDown()">
+        SET GO DOWN
+      </button>
+      <button *ngIf="isCurrentPlayer && currentPhase === 'PlayingTricks'"
+              class="cyberpunk-button"
+              [disabled]="!selectedCard || !isCardPlayable(selectedCard)"
+              (click)="playCard()">
+        PLAY CARD
+      </button>
+    </div>
+  
+    <div *ngIf="currentPhase === 'Bidding' && isBiddingStarted()" class="bidding-chips">
+        <button *ngFor="let bid of allBids" 
+                class="bid-button"
+                [disabled]="!isCurrentPlayer || !canBid(bid)"
+                [class.selected]="isBidSelected(bid)"
+                [class.not-turn]="!isCurrentPlayer"
+                [class.invalid-bid]="!isValidBid(bid)"
+                (click)="placeBid(bid)">
+          {{ bid }}
+        </button>
+      </div>
+  
+    <div *ngIf="currentPhase === 'SelectingTrump' && player.name === gameService.getGameMetadata().bidWinner" class="trump-selection">
+      <p class="trump-instruction">Select which suit you would like to be Trump:</p>
+      <div class="trump-options">
+        <button *ngFor="let suit of ['Red', 'Yellow', 'Green', 'Black']"
+                class="trump-button"
+                [ngClass]="{
+                  'selected': selectedTrump === suit,
+                  'red': suit === 'Red',
+                  'yellow': suit === 'Yellow',
+                  'green': suit === 'Green',
+                  'black': suit === 'Black'
+                }"
+                (click)="selectTrump(suit)">
+          <span>{{ suit }}</span>
+        </button>
+      </div>
+      <div class="action-buttons">
+        <button class="cyberpunk-button confirm-trump"
+                [disabled]="!selectedTrump"
+                (click)="setTrump()">
+          CONFIRM TRUMP
+        </button>
+      </div>
+    </div>
+  </div>

@@ -1,0 +1,31 @@
+<div class="score-card">
+    <table>
+      <thead>
+        <tr>
+          <th>Hand</th>
+          <th>Dealer</th>
+          <th>Bid Winner</th>
+          <th>Winning Bid</th>
+          <th>Team A</th>
+          <th>Team B</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let hand of displayedHands">
+          <td>{{ hand.handNumber }}</td>
+          <td>{{ hand.dealer }}</td>
+          <td>{{ hand.bidWinner }}</td>
+          <td>{{ hand.winningBid }}</td>
+          <td [class.bid-winner]="isBidWinner(hand, 'teamA')">{{ getTeamScore(hand, 'teamA') }}</td>
+          <td [class.bid-winner]="isBidWinner(hand, 'teamB')">{{ getTeamScore(hand, 'teamB') }}</td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr>
+          <td colspan="4">Total Score</td>
+          <td>{{ formatScore(gameScore.gameScore.teamA) }}</td>
+          <td>{{ formatScore(gameScore.gameScore.teamB) }}</td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>

@@ -1,0 +1,14 @@
+<mat-card 
+  class="card" 
+  [ngClass]="card.suit.toLowerCase()"
+  [class.selectable]="selectable"
+  [class.selected]="selected"
+  (click)="onClick()"
+>
+  <mat-card-content>
+    <div class="card-suit">{{ card.suit }}</div>
+    <div class="card-number">{{ card.number }}</div>
+    <div class="card-count" *ngIf="card.count > 0">{{ card.count }}</div>
+    <div *ngIf="isTrump" class="trump-star"><span class="material-symbols-outlined">raven</span></div>
+  </mat-card-content>
+</mat-card>

@@ -1,0 +1,103 @@
+.mini-player-hand {
+  background-color: var(--color-bg-light);
+  border: 2px solid var(--color-accent);
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 20px;
+  width: 300px;
+  box-sizing: border-box;
+
+  .player-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+  .name-and-indicators {
+    flex: 1;
+    margin-right: 20px;
+  }
+
+  .player-name {
+    color: var(--color-accent);
+    font-family: var(--font-accent);
+    font-size: 1.5rem;
+    margin-bottom: 5px;
+    text-align: left;
+  }
+
+  .indicators {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 5px;
+  }
+
+  .dealer-indicator,
+  .bid-winner-indicator {
+    font-size: 0.8rem;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+
+  .dealer-indicator {
+    background-color: var(--color-secondary);
+    color: var(--color-bg-dark);
+  }
+
+  .bid-winner-indicator {
+    background-color: white;
+    color: var(--color-primary);
+    border: 1px solid var(--color-primary);
+  }
+
+  .tricks-indicator {
+    display: flex;
+    align-items: center;
+    font-size: 1.2rem;
+    color: var(--color-text);
+    background-color: rgba(var(--color-accent-rgb), 0.2);
+    padding: 4px 8px;
+    border-radius: 20px;
+    width: fit-content;
+
+    .material-symbols-outlined {
+      font-size: 1.6rem;
+      margin-right: 4px;
+      transform: rotate(180deg);
+    }
+  }
+
+  .card-or-bid {
+    width: 60px;
+    height: 80px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 2px dashed var(--color-accent);
+    border-radius: 10px;
+    transition: border 0.3s ease;
+
+    &.no-border {
+      border: none;
+    }
+  }
+
+  .current-bid {
+    font-size: 30px;
+    font-weight: bold;
+    color: var(--color-accent);
+    text-align: center;
+
+    &.pass {
+      font-size: 20px;
+    }
+  }
+
+  .player-hand {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-top: 10px;
+  }
+}

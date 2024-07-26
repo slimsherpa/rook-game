@@ -1,0 +1,62 @@
+<div class="game-board">    
+    
+  <app-game-board-layout
+      [players]="players"
+      [currentPhase]="currentPhase"
+      [gameMetadata]="gameMetadata"
+      [currentPlayer]="currentPlayer"
+      [playedCards]="getPlayedCards()"
+      [tricksTaken]="getTricksTakenForAllPlayers()"
+      (playerSelectedEvent)="onPlayerSelected($event)">
+    </app-game-board-layout>
+
+    <div class="player-hands">
+      <app-player-hand 
+        *ngFor="let player of players" 
+        [player]="player"
+        [isDealer]="player.name === gameMetadata.dealer"
+        [isBidding]="currentPhase === 'Bidding' && player.name === currentPlayer"
+        [isCurrentPlayer]="player.name === currentPlayer"
+        [currentPhase]="currentPhase"
+        (startNewHandEvent)="startNewHand()"
+        (redealCardsEvent)="redealHand()"
+        (placeBidEvent)="placeBid(player, $event)"
+        (setGoDownEvent)="setGoDown(player, $event)"
+        (setTrumpEvent)="setTrump($event)" 
+        (cardPlayed)="onCardPlayed(player, $event)"
+      ></app-player-hand>
+    </div>
+  
+    <app-current-trick *ngIf="currentPhase === 'PlayingTricks'" class="current-trick"></app-current-trick>
+
+    <app-game-status 
+        [teamAScore]="getGameScore().teamA"
+        [teamBScore]="getGameScore().teamB">
+    </app-game-status>
+  
+    <app-hand-recap
+        [handScore]="gameService.getCurrentHand()"
+        [tricks]="gameService.getPlayedTricks()"
+        [goDown]="gameService.getGoDown()"
+        [gameScore]="gameService.getScoreCard()"
+        class="hand-recap">
+        </app-hand-recap>
+
+    <app-hand-status 
+        *ngIf="currentPhase === 'PlayingTricks' && lastTrick"
+        [lastTrick]="lastTrick"
+        [trump]="gameService.getCurrentHand()?.trump || ''"
+        [isFifthTrick]="isFifthTrickForTeam(gameService.getPlayedTricks().length - 1, lastTrick.winnerTeam)"
+        [runningScoreA]="getRunningScore('A', gameService.getPlayedTricks().length - 1)"
+        [runningScoreB]="getRunningScore('B', gameService.getPlayedTricks().length - 1)"
+        ></app-hand-status>
+  
+<app-score-card [gameScore]="getScoreCard()"></app-score-card>
+
+<div class="game-actions">
+    <button *ngIf="currentPhase === 'HandRecap'"
+            class="next-hand-button"
+            (click)="startNextHand()">
+      Start Next Hand
+    </button>
+  </div>

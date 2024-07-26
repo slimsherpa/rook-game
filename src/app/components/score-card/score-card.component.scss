@@ -1,0 +1,29 @@
+.score-card {
+    margin-top: 20px;
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      
+      th, td {
+        padding: 8px;
+        text-align: left;
+        border-bottom: 1px solid var(--color-accent);
+      }
+      
+      th {
+        background-color: var(--color-bg-dark);
+        color: var(--color-accent);
+      }
+      
+      tr:nth-child(even) {
+        background-color: var(--color-bg-light);
+      }
+      
+      tfoot td {
+        font-weight: bold;
+        background-color: var(--color-bg-dark);
+        color: var(--color-accent);
+      }
+    }
+  }

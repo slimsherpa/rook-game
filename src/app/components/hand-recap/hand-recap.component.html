@@ -1,0 +1,43 @@
+<div class="hand-recap" *ngIf="handScore">
+    <h2 class="recap-header">Hand Recap</h2>
+  
+    <div *ngFor="let trick of tricks; let i = index" class="trick-recap">
+        <div class="trick-content">
+          <div class="trick-number">{{ i + 1 }}</div>
+          <div class="trick-cards">
+            <div *ngFor="let play of trick.plays" class="played-card" [ngClass]="{'winner': play.isTrickWinner}">
+              <app-card [card]="play.card" [isTrump]="isTrumpCard(play.card)"></app-card>
+              <div class="player-name">{{ play.player }}</div>
+            </div>
+          </div>
+          <div class="trick-info">
+            <p>Winner: <span class="winner">{{ trick.winner }} (Team {{ trick.winnerTeam }})</span></p>
+            <p>Points: <span class="points">{{ trick.points }}</span></p>
+            <button *ngIf="isFifthTrickForTeam(i, trick.winnerTeam)" class="majority-bonus-button">
+                +20 points for Tricks
+              </button>
+            <p class="running-score">A={{ getRunningScore('A', i) }} B={{ getRunningScore('B', i) }}</p>
+          </div>
+        </div>
+      </div>
+  
+      <div *ngIf="shouldShowGoDown()" class="go-down-recap">
+        <div class="go-down-content">
+          <div class="go-down-number">
+            <span class="material-symbols-outlined">download</span>
+          </div>
+          <div class="go-down-cards">
+            <div *ngFor="let card of goDown" class="played-card">
+              <app-card [card]="card" [isTrump]="isTrumpCard(card)"></app-card>
+            </div>
+          </div>
+          <div class="go-down-info">
+            <p>Winner: <span class="winner">{{ handScore.goDown.capturedBy }} (Team {{ getGoDownWinnerTeam() }})</span></p>
+            <p>Points: <span class="points">{{ handScore.goDown.points }}</span></p>
+            <p class="running-score">A={{ getTeamScore('A') }} B={{ getTeamScore('B') }}</p>
+          </div>
+        </div>
+      </div>
+  
+      <div class="hand-conclusion" *ngIf="handScore">
+        <p class="conclusion-message">{{ getConclusionMessage() }}</p>

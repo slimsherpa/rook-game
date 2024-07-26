@@ -1,0 +1,219 @@
+.hand-recap {
+    background-color: var(--color-bg-light);
+    border: 2px solid var(--color-accent);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+    color: var(--color-text);
+  
+    .recap-header {
+      color: var(--color-secondary);
+      font-size: 1.8rem;
+      margin-bottom: 15px;
+      text-align: left;
+    }
+  
+    .trick-recap {
+        background-color: var(--color-bg-dark);
+        border: 1px solid var(--color-accent);
+        border-radius: 5px;
+        padding: 15px;
+        margin-bottom: 15px;
+        margin-top: 20px;
+    
+        .trick-content {
+          display: flex;
+          align-items: center;
+        }
+    
+        .trick-number {
+          font-size: 60px;
+          font-weight: bold;
+          color: var(--color-accent);
+          min-width: 30px;
+          text-align: center;
+          margin-left: 20px;
+        }
+    
+        .trick-cards {
+          margin-left: 20px;
+          display: flex;
+          gap: 15px;
+          flex-grow: 1;
+          justify-content: center;
+        }
+    
+        .played-card {
+          position: relative;
+          text-align: center;
+          
+          &.winner {
+            //background-color: var(--color-accent);
+            border-radius: 12px;
+            box-shadow: var(--neon-glow);
+          }
+    
+        //   .crown {
+        //     position: absolute;
+        //     top: -15px;
+        //     left: 50%;
+        //     transform: translateX(-50%);
+        //     font-size: 20px;
+        //     color: var(--color-accent);
+        //   }
+
+          .player-name {
+            font-size: 0.8rem;
+            margin-top: 5px;
+          }
+    
+          app-card {
+            // transform: scale(0.7); // Adjust this value as needed
+            transform-origin: center center;
+          }
+        }
+    
+        .trick-info {
+          text-align: left;
+          min-width: 180px;
+          font-size: 0.9rem;
+          margin-left: 20px;
+    
+          p {
+            margin: 2px 0;
+          }
+    
+          .winner, .points {
+            color: var(--color-secondary);
+          }
+    
+          .running-score {
+            font-weight: bold;
+            color: var(--color-accent);
+          }
+        }
+      }
+  
+      .go-down-recap {
+        background-color: var(--color-bg-dark);
+        border: 1px solid var(--color-accent);
+        border-radius: 5px;
+        padding: 15px;
+        margin-bottom: 15px;
+        margin-top: 20px;
+      
+        .go-down-content {
+          display: flex;
+          align-items: center;
+        }
+      
+        .go-down-number {
+          font-size: 60px;
+          font-weight: bold;
+          color: var(--color-accent);
+          min-width: 30px;
+          text-align: center;
+          margin-left: 20px;
+      
+          .material-symbols-outlined {
+            font-size: 60px;
+          }
+        }
+      
+        .go-down-cards {
+          margin-left: 20px;
+          display: flex;
+          gap: 15px;
+          flex-grow: 1;
+          justify-content: center;
+      
+          .played-card {
+            position: relative;
+            text-align: center;
+      
+            &.winner {
+              border-radius: 12px;
+              box-shadow: var(--neon-glow);
+            }
+      
+            app-card {
+              transform-origin: center center;
+            }
+          }
+        }
+      
+        .go-down-info {
+          text-align: left;
+          min-width: 180px;
+          font-size: 0.9rem;
+          margin-left: 20px;
+      
+          p {
+            margin: 2px 0;
+          }
+      
+          .winner, .points {
+            color: var(--color-secondary);
+          }
+      
+          .running-score {
+            font-weight: bold;
+            color: var(--color-accent);
+          }
+        }
+      }
+  
+    .hand-conclusion {
+      background-color: var(--color-bg-dark);
+      border: 1px solid var(--color-accent);
+      border-radius: 5px;
+      padding: 15px;
+      margin-top: 20px;
+  
+      h3 {
+        color: var(--color-accent);
+        font-size: 1.4rem;
+        margin-bottom: 10px;
+        text-align: center;
+      }
+  
+      p {
+        margin-bottom: 5px;
+      }
+  
+      .bid-info, .trump-info, .score-info {
+        color: var(--color-accent);
+      }
+  
+      .final-score {
+        margin-top: 15px;
+        text-align: center;
+        font-weight: bold;
+        
+        .team-score {
+          color: var(--color-accent);
+        }
+      }
+    }
+
+    .majority-bonus-button {
+        background-color: var(--color-secondary);
+        color: var(--color-bg-dark);
+        opacity: 0.8;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        margin-top: 5px;
+        cursor: pointer;
+      }
+
+    .conclusion-message {
+    font-size: 1.1rem;
+    color: var(--color-accent);
+    margin: 15px 0;
+    text-align: center;
+    white-space: pre-line; // This will preserve the line break in the message
+    }
+
+  }

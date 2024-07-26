@@ -1,1 +1,28 @@
-/* You can add global styles to this file, and also import other style files */
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+
+:root {
+  --color-bg-dark: #1a1a2e;
+  --color-bg-light: #16213e;
+  --color-primary: #0f3460;
+  --color-secondary: #e94560;
+  --color-accent: #00b4d8;
+  --color-text: #d3d3d3;
+  --color-text-dark: #a9a9a9;
+  --neon-glow: 0 0 5px var(--color-accent), 0 0 20px var(--color-accent);
+
+/* Card Colors */
+--card-red: #B71C1C;
+--card-yellow: #FFAB00;
+--card-green: #558B2F;
+--card-black: #5E35B1;
+
+  /* Font families */
+  --font-primary: 'Roboto', 'Helvetica Neue', sans-serif;
+  --font-accent: 'Orbitron', sans-serif;
+}
+
+body {
+  background-color: var(--color-bg-dark);
+  color: var(--color-text);
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  }

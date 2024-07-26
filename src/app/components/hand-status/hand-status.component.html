@@ -1,0 +1,18 @@
+<div class="hand-status" *ngIf="lastTrick">
+    <div class="trick-content">
+      <div class="trick-cards">
+        <div *ngFor="let play of lastTrick.plays" class="played-card" [ngClass]="{'winner': play.isTrickWinner}">
+          <app-card [card]="play.card" [isTrump]="isTrumpCard(play.card)"></app-card>
+          <div class="player-name">{{ play.player }}</div>
+        </div>
+      </div>
+      <div class="trick-info">
+        <p>Winner: <span class="winner">{{ lastTrick.winner }} (Team {{ lastTrick.winnerTeam }})</span></p>
+        <p>Points: <span class="points">{{ lastTrick.points }}</span></p>
+        <button *ngIf="isFifthTrick" class="majority-bonus-button">
+          +20 points for Tricks
+        </button>
+        <p class="running-score">A={{ runningScoreA }} B={{ runningScoreB }}</p>
+      </div>
+    </div>
+  </div>

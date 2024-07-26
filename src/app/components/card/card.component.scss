@@ -1,0 +1,60 @@
+.card {
+    width: 60px;
+    height: 80px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.3s ease;
+    margin: 0;
+    padding: 0;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    transition: transform 0.3s;
+    transform-style: preserve-3d;
+    position: relative;
+  }
+  .card-number { 
+    font-size: 24px;
+    text-shadow: 2px 2px 2px #000000;
+    color: white;
+    position: absolute;
+    top: 8px;
+    left: 8px; 
+  }
+  .card-suit { 
+    font-size: 0px;
+    color: white;
+    font-weight: bold;
+  }
+  .card-count {
+    font-size: 12px;
+    text-shadow: 1px 1px 2px #000000;
+    color: #FFF176;
+    font-weight: bold;
+    position: absolute;
+    bottom: 5px;
+    left: 8px;
+  }
+  .red { background-color: var(--card-red); }
+  .yellow { background-color: var(--card-yellow); }
+  .black { background-color: var(--card-black); }
+  .green { background-color: var(--card-green); }
+//   .selectable { cursor: pointer; }
+  .selected { 
+    box-shadow: 0 0 0 4px var(--color-accent), 0 0 0 4px #FFFFFF;
+    transform: translateY(-20px);
+  }
+  .trump-star {
+    position: absolute;
+    top: 60%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 15px;
+    color: white;
+    text-shadow: 2px 2px 2px #000000;
+  }
+
+  :host {
+    display: block;
+    cursor: inherit;
+  }
+  
