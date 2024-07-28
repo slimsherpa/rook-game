@@ -22,11 +22,11 @@ type ViewOption = Seat | 'God';
   styles: [`
     .player-selector {
       position: fixed;
-      top: 210px;
+      bottom: 20px;
       left: 30px;
       display: flex;
       flex-direction: column;
-      opacity: 0.4;
+      opacity: 0.3;
     }
     
     .player-button {

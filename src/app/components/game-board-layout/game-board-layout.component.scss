@@ -17,6 +17,16 @@
       gap: 20px;
       width: 100%;
     }
+
+    .top-player,
+    .bottom-player,
+    .middle-players .left-player,
+    .middle-players .right-player {
+      display: flex;
+      justify-content: center;
+      padding: 10px;
+      border-radius: 10px;
+    }
   
     .top-player {
       display: flex;

@@ -6,6 +6,11 @@
   margin-bottom: 20px;
   width: 300px;
   box-sizing: border-box;
+  transition: box-shadow 0.3s ease;
+
+  &.current-player {
+    box-shadow: var(--neon-glow);
+  }
 
   .player-info {
     display: flex;
