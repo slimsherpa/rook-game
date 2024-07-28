@@ -4,19 +4,22 @@ import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatChipsModule } from '@angular/material/chips';
 import { CardComponent, CardData } from '../card/card.component';
-import { Player, Team, PlayerService } from '../../services/player.service';
+import { Player, Team, PlayerService, Seat } from '../../services/player.service';
 import { BiddingService } from '../../services/bidding.service';
 import { GameService, GamePhase } from '../../services/game.service';
 import { CdkDragDrop, moveItemInArray, DragDropModule } from '@angular/cdk/drag-drop';
 import { ScoreService } from '../../services/score.service';
 import { TrickService } from '../../services/trick.service';
+import { SelectPlayerViewComponent } from '../select-player-view/select-player-view.component';
+
+type ViewOption = Seat | 'God';
 
 @Component({
   selector: 'app-player-hand',
   templateUrl: './player-hand.component.html',
   styleUrls: ['./player-hand.component.scss'],
   standalone: true,
-  imports: [CommonModule, MatCardModule, MatButtonModule, MatChipsModule, CardComponent, DragDropModule]
+  imports: [CommonModule, MatCardModule, MatButtonModule, MatChipsModule, CardComponent, DragDropModule ]
 })
 export class PlayerHandComponent implements OnChanges {
   @Input() player!: Player;
@@ -24,6 +27,7 @@ export class PlayerHandComponent implements OnChanges {
   @Input() isBidding: boolean = false;
   @Input() isCurrentPlayer: boolean = false;
   @Input() currentPhase!: GamePhase;
+  @Input() selectedPlayerView: ViewOption = 'A1';
   
   @Output() startNewHandEvent = new EventEmitter<void>();
   @Output() dealCardsEvent = new EventEmitter<void>();
@@ -39,6 +43,7 @@ export class PlayerHandComponent implements OnChanges {
   selectedCard: CardData | null = null;
   revealedCardCount: number = 0;
   revealedCards: boolean[] = [];
+  //selectedPlayerView: ViewOption = 'A1';
 
   constructor(
     private biddingService: BiddingService, 
@@ -48,7 +53,7 @@ export class PlayerHandComponent implements OnChanges {
   ) {}
 
   ngOnChanges(changes: SimpleChanges) {
-    if (changes['currentPhase']) {
+    if (changes['currentPhase'] || changes['selectedPlayerSeat']) {
       if (this.currentPhase === 'Dealing') {
         // Reset local state when a new hand starts
         this.selectedCards = [];
@@ -56,7 +61,19 @@ export class PlayerHandComponent implements OnChanges {
         this.selectedCard = null;
         this.player.currentBid = null;
       }
+      // Update visibility when selectedPlayerSeat changes
+      this.updateVisibility();
     }
+  }
+
+  private isVisible: boolean = false;
+
+  private updateVisibility() {
+    this.isVisible = this.selectedPlayerView === this.player.seat;
+  }
+
+  isHandVisible(): boolean {
+    return this.selectedPlayerView === 'God' || this.selectedPlayerView === this.player.seat;
   }
 
   get tricksTaken(): number {

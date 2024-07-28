@@ -10,10 +10,13 @@ import { HandRecapComponent } from '../hand-recap/hand-recap.component';
 import { GameStatusComponent } from '../game-status/game-status.component';
 import { HandStatusComponent } from '../hand-status/hand-status.component';
 import { GameService, GamePhase, TrickRecap } from '../../services/game.service';
-import { Player, Team } from '../../services/player.service';
+import { Player, Team, Seat } from '../../services/player.service';
 import { GameScore, HandScore } from '../../services/score.service';
 import { MiniPlayerComponent } from '../mini-player/mini-player.component';
 import { GameBoardLayoutComponent } from '../game-board-layout/game-board-layout.component';
+import { SelectPlayerViewComponent } from '../select-player-view/select-player-view.component';
+
+type ViewOption = Seat | 'God';
 
 @Component({
   selector: 'app-game-board',
@@ -31,7 +34,8 @@ import { GameBoardLayoutComponent } from '../game-board-layout/game-board-layout
     HandRecapComponent,
     HandStatusComponent,
     MiniPlayerComponent,
-    GameBoardLayoutComponent
+    GameBoardLayoutComponent,
+    SelectPlayerViewComponent
   ],
 })
 export class GameBoardComponent implements OnInit {
@@ -44,6 +48,7 @@ export class GameBoardComponent implements OnInit {
   goDown: any[] = [];
   goDownCapturedBy: string = '';
   goDownPoints: number = 0;
+  selectedPlayerView: ViewOption = 'A1';
 
   constructor(public gameService: GameService) {}
 
@@ -54,6 +59,10 @@ export class GameBoardComponent implements OnInit {
   initializeGame() {
     this.gameService.initializePlayers();
     this.updateGameState();
+  }
+
+  onPlayerViewSelected(option: ViewOption) {
+    this.selectedPlayerView = option;
   }
 
   startNewHand() {

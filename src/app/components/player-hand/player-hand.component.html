@@ -1,5 +1,5 @@
-<div class="player-hand">
-    <div class="player-info">
+<div *ngIf="isHandVisible()" class="player-hand">
+    <!-- <div class="player-info">
         <h2 class="player-name">
           {{ player.name }} ({{ player.seat }})
           <span *ngIf="isDealer" class="dealer-indicator">DEALER</span>
@@ -9,7 +9,7 @@
         <div *ngIf="tricksTaken > 0" class="tricks-indicator">
             <span class="material-symbols-outlined upside-down">playing_cards</span> × {{ tricksTaken }}
           </div>
-    </div>
+    </div> -->
   
     <div class="hand-container">
         <div class="hand" cdkDropList cdkDropListOrientation="horizontal" (cdkDropListDropped)="drop($event)">

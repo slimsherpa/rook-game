@@ -7,9 +7,11 @@
       [currentPlayer]="currentPlayer"
       [playedCards]="getPlayedCards()"
       [tricksTaken]="getTricksTakenForAllPlayers()"
-      (playerSelectedEvent)="onPlayerSelected($event)">
+      [selectedPlayerView]="selectedPlayerView">
     </app-game-board-layout>
 
+    <app-select-player-view (optionSelected)="onPlayerViewSelected($event)"></app-select-player-view>
+  
     <div class="player-hands">
       <app-player-hand 
         *ngFor="let player of players" 
@@ -18,6 +20,7 @@
         [isBidding]="currentPhase === 'Bidding' && player.name === currentPlayer"
         [isCurrentPlayer]="player.name === currentPlayer"
         [currentPhase]="currentPhase"
+        [selectedPlayerView]="selectedPlayerView"
         (startNewHandEvent)="startNewHand()"
         (redealCardsEvent)="redealHand()"
         (placeBidEvent)="placeBid(player, $event)"

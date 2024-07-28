@@ -1,9 +1,20 @@
+app-player-hand {
+  flex: 0 0 auto; /* This ensures that hidden components don't take up space */
+}
+
+:host {
+  display: contents; // This makes the host element not participate in flexbox layout
+}
+
 .player-hand {
-    background-color: var(--color-bg-light);
-    border: 2px solid var(--color-accent);
-    border-radius: 10px;
-    padding: 20px;
-    margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-bg-light);
+  border: 2px solid var(--color-accent);
+  border-radius: 10px;
+  gap: 10px;
+  padding: 20px;
+  margin-bottom: 10px; // Add some space between visible hands
 
     .player-info {
         display: flex;
