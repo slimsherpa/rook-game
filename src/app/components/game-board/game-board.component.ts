@@ -10,11 +10,12 @@ import { HandRecapComponent } from '../hand-recap/hand-recap.component';
 import { GameStatusComponent } from '../game-status/game-status.component';
 import { HandStatusComponent } from '../hand-status/hand-status.component';
 import { GameService, GamePhase, TrickRecap } from '../../services/game.service';
-import { Player, Team, Seat } from '../../services/player.service';
+import { PlayerService, Player, Team, Seat } from '../../services/player.service';
 import { GameScore, HandScore } from '../../services/score.service';
 import { MiniPlayerComponent } from '../mini-player/mini-player.component';
 import { GameBoardLayoutComponent } from '../game-board-layout/game-board-layout.component';
 import { SelectPlayerViewComponent } from '../select-player-view/select-player-view.component';
+import { GoDownComponent } from '../go-down/go-down.component';
 
 type ViewOption = Seat | 'God';
 
@@ -35,7 +36,8 @@ type ViewOption = Seat | 'God';
     HandStatusComponent,
     MiniPlayerComponent,
     GameBoardLayoutComponent,
-    SelectPlayerViewComponent
+    SelectPlayerViewComponent,
+    GoDownComponent
   ],
 })
 export class GameBoardComponent implements OnInit {
@@ -46,11 +48,15 @@ export class GameBoardComponent implements OnInit {
   playedTricks: any[] = [];
   tricks: TrickRecap[] = [];
   goDown: any[] = [];
+  goDownCards: CardData[] = []; // I think this is duplicative
   goDownCapturedBy: string = '';
   goDownPoints: number = 0;
   selectedPlayerView: ViewOption = 'A1';
 
-  constructor(public gameService: GameService) {}
+  constructor(
+    public gameService: GameService,
+    private playerService: PlayerService
+  ) {}
 
   ngOnInit() {
     this.initializeGame();
@@ -183,5 +189,16 @@ export class GameBoardComponent implements OnInit {
       acc[player.name] = this.gameService.getTricksTaken(player.name);
       return acc;
     }, {});
+  }
+
+  isGoDownVisible(): boolean {
+    return this.selectedPlayerView === 'God' || 
+           (this.gameMetadata.bidWinner && 
+            this.selectedPlayerView === this.getBidWinnerSeat());
+  }
+
+  private getBidWinnerSeat(): Seat | null {
+    const bidWinner = this.players.find(player => player.name === this.gameMetadata.bidWinner);
+    return bidWinner ? bidWinner.seat : null;
   }
 }

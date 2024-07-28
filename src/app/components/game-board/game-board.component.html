@@ -30,7 +30,7 @@
       ></app-player-hand>
     </div>
   
-    <app-current-trick *ngIf="currentPhase === 'PlayingTricks'" class="current-trick"></app-current-trick>
+    <!-- <app-current-trick *ngIf="currentPhase === 'PlayingTricks'" class="current-trick"></app-current-trick> -->
 
     <app-game-status 
         [teamAScore]="getGameScore().teamA"
@@ -44,6 +44,13 @@
         [gameScore]="gameService.getScoreCard()"
         class="hand-recap">
         </app-hand-recap>
+
+      <app-go-down 
+        [goDownCards]="goDown"
+        [isVisible]="isGoDownVisible()"
+        [trump]="gameService.getCurrentHand()?.trump || ''"
+        [currentPhase]="currentPhase">
+      </app-go-down>
 
     <app-hand-status 
         *ngIf="currentPhase === 'PlayingTricks' && lastTrick"
