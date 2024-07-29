@@ -19,66 +19,86 @@ export interface Player {
   providedIn: 'root'
 })
 export class PlayerService {
-  private players: Player[] = [];
+  private players: Map<Seat, Player> = new Map();
+  private readonly seats: Seat[] = ['A1', 'B1', 'A2', 'B2'];
 
   constructor() {
-    this.players = this.initializePlayers();
+    this.initializePlayers();
+  }
+
+  private initializePlayers(): void {
+    const names = ['Riley', 'Tyler', 'Nate', 'Jeremy'];
+    this.seats.forEach((seat, index) => {
+      this.players.set(seat, {
+        name: names[index],
+        seat: seat,
+        team: this.getTeamForSeat(seat),
+        hand: [],
+        isDealer: index === 0, // First player is the dealer
+        currentBid: null,
+        tricksTaken: 0,
+        isRevealingCards: false
+      });
+    });
   }
 
   getTeamForSeat(seat: Seat): Team {
     return seat.startsWith('A') ? 'A' : 'B';
   }
 
-  initializePlayers(): Player[] {
-    const seats: Seat[] = ['A1', 'B1', 'A2', 'B2'];
-    const names = ['Riley', 'Tyler', 'Nate', 'Jeremy'];
-
-    return seats.map((seat, index) => ({
-      name: names[index],
-      seat: seat,
-      team: this.getTeamForSeat(seat),
-      hand: [],
-      isDealer: false,
-      currentBid: null,
-      tricksTaken: 0,
-      isRevealingCards: false
-    }));
+  getTeamForPlayer(playerNameOrSeat: string): Team {
+    const player = this.getPlayerBySeatOrName(playerNameOrSeat);
+    return player ? player.team : 'A'; // Default to 'A' if player not found
   }
 
-  dealCards(players: Player[], deck: CardData[]): void {
-    players.forEach(player => player.hand = []);
+  private getPlayerBySeatOrName(playerNameOrSeat: string): Player | undefined {
+    // First, try to find by seat
+    if (this.seats.includes(playerNameOrSeat as Seat)) {
+      return this.players.get(playerNameOrSeat as Seat);
+    }
+    // If not found by seat, try to find by name
+    return Array.from(this.players.values()).find(player => player.name === playerNameOrSeat);
+  }
+
+  dealCards(deck: CardData[]): void {
+    this.players.forEach(player => player.hand = []);
     for (let i = 0; i < 9; i++) {
-      players.forEach(player => {
-        const card = deck.pop();
-        if (card) player.hand.push(card);
+      this.seats.forEach(seat => {
+        const player = this.players.get(seat);
+        if (player) {
+          const card = deck.pop();
+          if (card) player.hand.push(card);
+        }
       });
     }
   }
 
-  getTeammates(players: Player[]): [Player, Player][] {
-    return [
-      players.filter(p => p.team === 'A') as [Player, Player],
-      players.filter(p => p.team === 'B') as [Player, Player]
-    ];
+  getTeammates(): [Player, Player][] {
+    const teamA = this.seats.filter(seat => seat.startsWith('A')).map(seat => this.players.get(seat)!);
+    const teamB = this.seats.filter(seat => seat.startsWith('B')).map(seat => this.players.get(seat)!);
+    return [teamA as [Player, Player], teamB as [Player, Player]];
   }
 
-  getTeamForPlayer(playerName: string): Team {
-    const player = this.players.find(p => p.name === playerName);
-    return player ? player.team : 'B'; // Default to 'B' if player not found
-  }
-
-  resetPlayerState(players: Player[]): void {
-    players.forEach(player => {
+  resetPlayerState(): void {
+    this.players.forEach(player => {
       player.hand = [];
       player.currentBid = null;
       player.tricksTaken = 0;
     });
   }
 
-  rotateDealer(players: Player[]): void {
-    const currentDealerIndex = players.findIndex(p => p.isDealer);
-    players[currentDealerIndex].isDealer = false;
-    const nextDealerIndex = (currentDealerIndex + 1) % players.length;
-    players[nextDealerIndex].isDealer = true;
+  rotateDealer(): void {
+    const currentDealerIndex = this.seats.findIndex(seat => this.players.get(seat)!.isDealer);
+    this.players.get(this.seats[currentDealerIndex])!.isDealer = false;
+    const nextDealerIndex = (currentDealerIndex + 1) % this.seats.length;
+    this.players.get(this.seats[nextDealerIndex])!.isDealer = true;
+  }
+
+  getPlayers(): Player[] {
+    return Array.from(this.players.values());
+  }
+
+  getPlayerBySeat(seat: Seat): Player | undefined {
+    return this.players.get(seat);
   }
 }

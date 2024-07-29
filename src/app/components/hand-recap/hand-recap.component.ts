@@ -33,36 +33,25 @@ export class HandRecapComponent implements OnChanges {
 
   updateRunningScores() {
     if (this.handScore) {
-      this.handScore.handScore.teamA = this.getTeamScore('A');
-      this.handScore.handScore.teamB = this.getTeamScore('B');
+      this.handScore.handScore.teamA = this.scoreService.getHandScoreForTeam('A', this.handScore);
+      this.handScore.handScore.teamB = this.scoreService.getHandScoreForTeam('B', this.handScore);
     }
   }
 
-  getTeamTricks(team: 'A' | 'B'): number {
-    if (!this.handScore) return 0;
-    return Object.entries(this.handScore.tricksCaptured)
-      .filter(([playerName, _]) => this.playerService.getTeamForPlayer(playerName) === team)
-      .reduce((sum, [_, tricks]) => sum + tricks, 0);
+  getTeamCapturedPoints(team: 'A' | 'B'): number {
+    return this.handScore ? this.scoreService.getCapturedPointsForTeam(team, this.handScore) : 0;
   }
 
   getFinalTeamScore(team: 'A' | 'B'): number {
-    if (!this.handScore) return 0;
-    const score = this.getTeamScore(team);
-    const bidWinnerTeam = this.playerService.getTeamForPlayer(this.handScore.bidWinner);
-    if (team === bidWinnerTeam && score < this.handScore.winningBid) {
-      return -this.handScore.winningBid;
-    }
-    return score;
+    return this.handScore ? this.scoreService.getHandScoreForTeam(team, this.handScore) : 0;
+  }
+
+  getTeamTricks(team: 'A' | 'B'): number {
+    return this.handScore ? this.scoreService.getTeamTricksCount(team, this.handScore) : 0;
   }
 
   isBidWinnerSet(): boolean {
-    if (!this.handScore) return false;
-    const bidWinnerTeam = this.playerService.getTeamForPlayer(this.handScore.bidWinner);
-    return this.getTeamScore(bidWinnerTeam) < this.handScore.winningBid;
-  }
-
-  formatScore(score: number): string {
-    return score >= 0 ? `+${score}` : `${score}`;
+    return this.handScore ? this.scoreService.isBidWinnerSet(this.handScore) : false;
   }
 
   shouldShowGoDown(): boolean {
@@ -75,20 +64,7 @@ export class HandRecapComponent implements OnChanges {
   }
 
   getRunningScore(team: Team, trickIndex: number): number {
-    let score = this.tricks.slice(0, trickIndex + 1).reduce((sum, trick) => {
-      if (trick.winnerTeam === team) {
-        return sum + trick.points;
-      }
-      return sum;
-    }, 0);
-  
-    // Add 20 points bonus if this team has won 5 or more tricks
-    const teamTricks = this.tricks.slice(0, trickIndex + 1).filter(trick => trick.winnerTeam === team).length;
-    if (teamTricks >= 5) {
-      score += 20;
-    }
-  
-    return score;
+    return this.handScore ? this.scoreService.getRunningScore(team, trickIndex, this.handScore) : 0;
   }
 
   isGoDownCaptured(): boolean {
@@ -101,26 +77,20 @@ export class HandRecapComponent implements OnChanges {
 
   getGoDownWinnerTeam(): Team {
     const winner = this.getGoDownWinner();
+    // If winner is a seat, use it directly; otherwise, try to find the player
     return this.playerService.getTeamForPlayer(winner);
   }
 
-  getTeamScore(team: 'A' | 'B'): number {
-    if (!this.handScore) return 0;
-    const trickPoints = this.tricks.reduce((sum, trick) => 
-      trick.winnerTeam === team ? sum + trick.points : sum, 0);
-    const goDownPoints = this.isGoDownCaptured() && this.getGoDownWinnerTeam() === team ? this.handScore.goDown.points : 0;
-    const majorityBonus = this.getTeamTricks(team) >= 5 ? 20 : 0;
-    return trickPoints + goDownPoints + majorityBonus;
-  }
-
   getMajorityTrickWinner(): 'A' | 'B' | null {
-    if (!this.handScore || this.tricks.length < 9) return null;
-    return this.getTeamTricks('A') > 4 ? 'A' : 'B';
+    return this.handScore ? this.handScore.mosttricksTeam : null;
   }
 
-  isFifthTrickForTeam(trickIndex: number, team: 'A' | 'B'): boolean {
-    const teamTricks = this.tricks.slice(0, trickIndex + 1).filter(trick => trick.winnerTeam === team).length;
-    return teamTricks === 5;
+  isFifthTrickForTeam(trickIndex: number, team: Team): boolean {
+    const currentHand = this.gameService.getCurrentHand();
+    if (currentHand) {
+      return this.scoreService.getTeamTricksCount(team, currentHand, trickIndex + 1) === 5;
+    }
+    return false;
   }
 
   getConclusionMessage(): string {
@@ -128,8 +98,8 @@ export class HandRecapComponent implements OnChanges {
   
     const bidWinnerTeam = this.playerService.getTeamForPlayer(this.handScore.bidWinner);
     const otherTeam = bidWinnerTeam === 'A' ? 'B' : 'A';
-    const bidWinnerScore = this.getTeamScore(bidWinnerTeam);
-    const otherTeamScore = this.getTeamScore(otherTeam);
+    const bidWinnerScore = this.getTeamCapturedPoints(bidWinnerTeam);
+    const otherTeamScore = this.getTeamCapturedPoints(otherTeam);
   
     if (bidWinnerScore >= this.handScore.winningBid) {
       return `Team ${bidWinnerTeam} made it! They captured ${bidWinnerScore} points on a ${this.handScore.winningBid} bid.\n` +
@@ -139,5 +109,4 @@ export class HandRecapComponent implements OnChanges {
              `Team ${otherTeam} got ${otherTeamScore} points.`;
     }
   }
-
 }

@@ -1,7 +1,6 @@
-import { Player, Team } from './player.service';
-import { CardData } from '../components/card/card.component';
 import { Injectable } from '@angular/core';
-
+import { Player, Team, PlayerService } from './player.service';
+import { CardData } from '../components/card/card.component';
 export interface TrickScore {
   winnerPlayer: string;
   winnerTeam: Team;
@@ -16,29 +15,20 @@ export interface HandScore {
   winningBid: number;
   trump: string;
   tricks: TrickScore[];
-  tricksCaptured: {
-    [playerName: string]: number;
-    teamA: number;
-    teamB: number;
-  };
-  goDown: {
-    points: number;
+  goDown: { 
+    points: number; 
     capturedBy: string;
-  };
-  handScore: {
+   };
+  mosttricksTeam: Team; //team that captured the most tricks
+  capturedPoints: { // this includes from cards and the 20 points for most tricks. Between the two teams, it should ALWAYS equal 120.
     teamA: number;
     teamB: number;
   };
-  actualPointsA: number;
-  actualPointsB: number;
-  scoreA: number;
-  scoreB: number;
-  tricksWonA: number;
-  tricksWonB: number;
-  finalScoreA: number;
-  finalScoreB: number;
-  goDownPoints: number;
-  goDownCapturedBy: string;
+  handScore: { // this is the score that will be reported for that hand. It considers if the bidwinning team got set or not.
+    teamA: number; 
+    teamB: number;
+  };
+  isFinalized: boolean;
 }
 
 export interface GameScore {
@@ -50,14 +40,6 @@ export interface GameScore {
   };
 }
 
-export interface ScoreCardEntry {
-  dealer: string;
-  bidWinner: string;
-  winningBid: number;
-  teamAScore: number;
-  teamBScore: number;
-}
-
 @Injectable({
   providedIn: 'root'
 })
@@ -65,35 +47,42 @@ export class ScoreService {
   private gameScore: GameScore = {
     hands: [],
     currentHandIndex: -1,
-    gameScore: {
-      teamA: 0,
-      teamB: 0
-    }
+    gameScore: { teamA: 0, teamB: 0 }
   };
 
+  constructor(private playerService: PlayerService) {}
+
+  getTeamForPlayer(playerName: string): Team {
+    return this.playerService.getTeamForPlayer(playerName);
+  }
+
   initializeHand(handNumber: number, dealer: Player, bidWinner: Player | null, winningBid: number, trump: string): void {
-    this.gameScore.hands.push({
+    const newHand: HandScore = {
       handNumber,
       dealer: dealer.name,
       bidWinner: bidWinner ? bidWinner.name : '',
       winningBid,
       trump,
       tricks: [],
-      tricksCaptured: { teamA: 0, teamB: 0 },
       goDown: { points: 0, capturedBy: '' },
+      mosttricksTeam: 'A',
+      capturedPoints: { teamA: 0, teamB: 0 },
       handScore: { teamA: 0, teamB: 0 },
-      actualPointsA: 0,
-      actualPointsB: 0,
-      scoreA: 0,
-      scoreB: 0,
-      tricksWonA: 0,
-      tricksWonB: 0,
-      finalScoreA: 0,
-      finalScoreB: 0,
-      goDownPoints: 0,
-      goDownCapturedBy: ''
-    });
+      isFinalized: false
+    };
+    this.gameScore.hands.push(newHand);
     this.gameScore.currentHandIndex++;
+  }
+
+  getCurrentHand(): HandScore | undefined {
+    return this.gameScore.hands[this.gameScore.currentHandIndex];
+  }
+
+  setGoDownInfo(player: Player, points: number): void {
+    const currentHand = this.getCurrentHand();
+    if (currentHand) {
+      currentHand.goDown = { points, capturedBy: '' };
+    }
   }
 
   updateTrickScore(winnerPlayer: Player, cards: CardData[]): void {
@@ -107,43 +96,18 @@ export class ScoreService {
         cards
       };
       currentHand.tricks.push(trickScore);
-      
-      // Update tricks captured for the winning player
-      if (!currentHand.tricksCaptured[winnerPlayer.name]) {
-        currentHand.tricksCaptured[winnerPlayer.name] = 0;
-      }
-      currentHand.tricksCaptured[winnerPlayer.name]++;
-
-      // Update hand score
-      this.updateHandScore(winnerPlayer.team, points);
-
-      // If this is the 9th trick, assign GoDown points
+  
+      // Check if this is the 9th trick and assign GoDown
       if (currentHand.tricks.length === 9) {
-        this.assignGoDownPoints(winnerPlayer);
+        currentHand.goDown.capturedBy = winnerPlayer.name;
+        //console.log(`GoDown captured by ${winnerPlayer.name} (Team ${winnerPlayer.team})`);
       }
+  
+      this.updateHandScore(currentHand);
     }
   }
 
-  private assignGoDownPoints(winnerPlayer: Player): void {
-    const currentHand = this.getCurrentHand();
-    if (currentHand && currentHand.goDown.points > 0) {
-      currentHand.goDown.capturedBy = winnerPlayer.name;
-      this.updateHandScore(winnerPlayer.team, currentHand.goDown.points);
-    }
-  }
-
-  private updateHandScore(team: Team, points: number): void {
-    const currentHand = this.getCurrentHand();
-    if (currentHand) {
-      if (team === 'A') {
-        currentHand.handScore.teamA += points;
-      } else {
-        currentHand.handScore.teamB += points;
-      }
-    }
-  }
-
-  private calculateTrickPoints(cards: CardData[]): number {
+  calculateTrickPoints(cards: CardData[]): number {
     return cards.reduce((sum, card) => {
       if (card.number === 5) return sum + 5;
       if (card.number === 10 || card.number === 13) return sum + 10;
@@ -151,47 +115,131 @@ export class ScoreService {
     }, 0);
   }
 
-  setGoDownInfo(player: Player, points: number): void {
-    const currentHand = this.getCurrentHand();
-    if (currentHand) {
-      currentHand.goDown = { points, capturedBy: '' };
-      // We don't update the hand score here anymore, it will be done when the 9th trick is won
+  getTeamTricksCount(team: Team, hand: HandScore, upToTrick?: number): number {
+    const tricksToConsider = upToTrick ? hand.tricks.slice(0, upToTrick) : hand.tricks;
+    return tricksToConsider.filter(trick => trick.winnerTeam === team).length;
+  }
+
+  private updateHandScore(hand: HandScore): void {
+    hand.capturedPoints.teamA = this.calculateCapturedPoints('A', hand);
+    hand.capturedPoints.teamB = this.calculateCapturedPoints('B', hand);
+    hand.mosttricksTeam = this.determineMostTricksTeam(hand);
+    this.calculateFinalHandScore(hand);
+  }
+
+  private calculateCapturedPoints(team: Team, hand: HandScore): number {
+    const trickPoints = hand.tricks.reduce((sum, trick) => 
+      trick.winnerTeam === team ? sum + trick.points : sum, 0);
+    
+    const goDownPoints = (hand.goDown.capturedBy && this.playerService.getTeamForPlayer(hand.goDown.capturedBy) === team) 
+      ? hand.goDown.points 
+      : 0;
+  
+    const majorityBonus = this.getTeamTricksCount(team, hand) > 4 ? 20 : 0;
+    
+    const total = trickPoints + goDownPoints + majorityBonus;
+    
+    // console.log(`Captured points for Team ${team}:`, {
+    //   trickPoints,
+    //   goDownPoints,
+    //   majorityBonus,
+    //   total,
+    //   goDownCapturedBy: hand.goDown.capturedBy
+   // })
+  ;
+  
+    return total;
+  }
+
+  private determineMostTricksTeam(hand: HandScore): Team {
+    return this.getTeamTricksCount('A', hand) > 4 ? 'A' : 'B';
+  }
+
+  private calculateFinalHandScore(hand: HandScore): void {
+    const bidWinnerTeam = this.playerService.getTeamForPlayer(hand.bidWinner);
+    const bidWinnerScore = hand.capturedPoints[bidWinnerTeam === 'A' ? 'teamA' : 'teamB'];
+  
+    if (bidWinnerScore >= hand.winningBid) {
+      hand.handScore.teamA = hand.capturedPoints.teamA;
+      hand.handScore.teamB = hand.capturedPoints.teamB;
+    } else {
+      if (bidWinnerTeam === 'A') {
+        hand.handScore.teamA = -hand.winningBid;
+        hand.handScore.teamB = hand.capturedPoints.teamB;
+      } else {
+        hand.handScore.teamA = hand.capturedPoints.teamA;
+        hand.handScore.teamB = -hand.winningBid;
+      }
     }
+  
+    // console.log(`Final hand score:`, {
+    //   teamA: hand.handScore.teamA,
+    //   teamB: hand.handScore.teamB
+    // })
+    ;
+  }
+
+  getRunningScore(team: Team, trickIndex: number, hand: HandScore): number {
+    const playedTricks = hand.tricks.slice(0, trickIndex + 1);
+    let score = playedTricks.reduce((sum, trick) => 
+      trick.winnerTeam === team ? sum + trick.points : sum, 0);
+
+    if (this.getTeamTricksCount(team, hand, trickIndex + 1) >= 5) {
+      score += 20;
+    }
+
+    return score;
+  }
+
+  getCapturedPointsForTeam(team: Team, hand: HandScore): number {
+    return hand.capturedPoints[team === 'A' ? 'teamA' : 'teamB'];
+  }
+
+  isBidWinnerSet(hand: HandScore): boolean {
+    const bidWinnerTeam = this.getTeamForPlayer(hand.bidWinner);
+    return hand.capturedPoints[bidWinnerTeam === 'A' ? 'teamA' : 'teamB'] < hand.winningBid;
   }
 
   finalizeHandScore(): void {
     const currentHand = this.getCurrentHand();
-    if (currentHand) {
-      const bidWinnerTeam = this.getTeamForPlayer(currentHand.bidWinner);
-      const otherTeam = bidWinnerTeam === 'teamA' ? 'teamB' : 'teamA';
-
-      currentHand.actualPointsA = currentHand.handScore.teamA;
-      currentHand.actualPointsB = currentHand.handScore.teamB;
-
-      if (currentHand.handScore[bidWinnerTeam] >= currentHand.winningBid) {
-        // Bid winner made their bid
-        // No changes needed to handScore
-      } else {
-        // Bid winner got set
-        currentHand.handScore[bidWinnerTeam] = -currentHand.winningBid;
-        currentHand.handScore[otherTeam] = currentHand.handScore[otherTeam];
-      }
-
-      // Update game score
+    if (currentHand && !currentHand.isFinalized) {
+      this.updateHandScore(currentHand);
+      
+      // Update the game score
       this.gameScore.gameScore.teamA += currentHand.handScore.teamA;
       this.gameScore.gameScore.teamB += currentHand.handScore.teamB;
-
-      currentHand.finalScoreA = this.gameScore.gameScore.teamA;
-      currentHand.finalScoreB = this.gameScore.gameScore.teamB;
+      
+      currentHand.isFinalized = true;
     }
   }
 
-  private getTeamForPlayer(playerName: string): 'teamA' | 'teamB' {
-    return playerName.startsWith('A') ? 'teamA' : 'teamB';
+  resetCurrentHand(): void {
+    const currentHand = this.getCurrentHand();
+    if (currentHand) {
+      currentHand.tricks = [];
+      currentHand.goDown = { points: 0, capturedBy: '' };
+      currentHand.mosttricksTeam = 'A';
+      currentHand.capturedPoints = { teamA: 0, teamB: 0 };
+      currentHand.handScore = { teamA: 0, teamB: 0 };
+      currentHand.isFinalized = false;
+      //console.log(`Hand ${currentHand.handNumber} reset:`, JSON.stringify(currentHand, null, 2));
+    }
   }
 
-  getCurrentHand(): HandScore | undefined {
-    return this.gameScore.hands[this.gameScore.currentHandIndex];
+  prepareNewHand(): void {
+    this.gameScore.currentHandIndex++;
+  }
+
+  getCurrentHandNumber(): number {
+    return this.gameScore.currentHandIndex + 1;
+  }
+
+  getAllHands(): HandScore[] {
+    return this.gameScore.hands;
+  }
+
+  getHandScoreForTeam(team: Team, hand: HandScore): number {
+    return hand.handScore[team === 'A' ? 'teamA' : 'teamB'];
   }
 
   getGameScore(): GameScore {
@@ -202,51 +250,8 @@ export class ScoreService {
     };
   }
 
-  getCurrentTrickScore(): TrickScore | undefined {
-    const currentHand = this.getCurrentHand();
-    return currentHand?.tricks[currentHand.tricks.length - 1];
-  }
-
-  getTotalPointsCaptured(): { teamA: number, teamB: number } {
-    const currentHand = this.getCurrentHand();
-    if (!currentHand) return { teamA: 0, teamB: 0 };
-
-    return currentHand.tricks.reduce((total, trick) => {
-      total[trick.winnerTeam === 'A' ? 'teamA' : 'teamB'] += trick.points;
-      return total;
-    }, { teamA: 0, teamB: 0 });
-  }
-
   isGameOver(): boolean {
     const { teamA, teamB } = this.gameScore.gameScore;
     return teamA > 500 || teamA < -250 || teamB > 500 || teamB < -250;
-  }
-
-  getScoreCardData(): ScoreCardEntry[] {
-    return this.gameScore.hands.map(hand => ({
-      dealer: hand.dealer,
-      bidWinner: hand.bidWinner,
-      winningBid: hand.winningBid,
-      teamAScore: hand.handScore.teamA,
-      teamBScore: hand.handScore.teamB
-    }));
-  }
-
-  getTotalGameScore(): { teamA: number, teamB: number } {
-    return this.gameScore.gameScore;
-  }
-
-  refreshScoreData(): void {
-    // This method doesn't need to do anything, it's just a trigger
-    // for components to know when to update their view
-  }
-
-  
-
-  // Validation methods can be added here if needed
-
-  // For debugging purposes
-  logCurrentState(): void {
-    console.log('Current Game State:', JSON.stringify(this.gameScore, null, 2));
   }
 }

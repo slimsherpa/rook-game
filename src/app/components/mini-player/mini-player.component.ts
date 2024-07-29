@@ -10,7 +10,7 @@ import { GameService, GamePhase } from '../../services/game.service';
   standalone: true,
   imports: [CommonModule, MatCardModule, CardComponent],
   template: `
-    <div class="mini-player-hand">
+    <div class="mini-player-hand" [class.current-player]="isCurrentPlayer">
       <div class="player-info">
         <div class="name-and-indicators">
           <h2 class="player-name">{{ player.name }} ({{ player.seat }})</h2>
@@ -44,11 +44,9 @@ export class MiniPlayerComponent {
   @Input() tricksTaken: number = 0;
   @Input() showHand: boolean = false;
   @Input() trump: string | null = null;
+  @Input() isCurrentPlayer: boolean = false;
   
   ngOnChanges(changes: SimpleChanges) {
-    console.log('MiniPlayer changes:', changes);
-    console.log('MiniPlayer - player:', this.player);
-    console.log('MiniPlayer - isDealer:', this.isDealer);
   }
 
   get displayBid(): string | null {

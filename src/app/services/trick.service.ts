@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Player, Team } from './player.service';
+import { Player, Team, PlayerService } from './player.service';
 import { ScoreService } from './score.service';
 import { CardData } from '../components/card/card.component';
 
@@ -32,8 +32,11 @@ export class TrickService {
   private leadSuit: string | null = null;
   private trickCounts: { [playerName: string]: number } = {};
 
-  constructor(private scoreService: ScoreService) {}
-
+  constructor(
+    private playerService: PlayerService,
+    private scoreService: ScoreService
+  ) {}
+  
   getTrickCounts(): TrickCounts {
     return {...this.trickCounts};
   }
@@ -83,9 +86,14 @@ export class TrickService {
     // Update trick counts
     this.trickCounts[winningPlay.player.name] = (this.trickCounts[winningPlay.player.name] || 0) + 1;
 
-    const trickScore = this.scoreService.getCurrentTrickScore();
-    if (!trickScore) {
-      throw new Error('Failed to get current trick score');
+    const currentHand = this.scoreService.getCurrentHand();
+    if (!currentHand) {
+      throw new Error('Failed to get current hand');
+    }
+
+    const lastTrick = currentHand.tricks[currentHand.tricks.length - 1];
+    if (!lastTrick) {
+      throw new Error('Failed to get last trick score');
     }
 
     const trickRecap: TrickRecap = {
@@ -93,11 +101,11 @@ export class TrickService {
         player: play.player.name,
         team: play.player.team,
         card: play.card,
-        isTrickWinner: play === winningPlay
+        isTrickWinner: play.player.name === lastTrick.winnerPlayer
       })),
-      winner: trickScore.winnerPlayer,
-      winnerTeam: trickScore.winnerTeam,
-      points: trickScore.points
+      winner: lastTrick.winnerPlayer,
+      winnerTeam: lastTrick.winnerTeam,
+      points: lastTrick.points
     };
 
     return trickRecap;
@@ -111,12 +119,7 @@ export class TrickService {
     return this.currentTrick.length;
   }
 
-  calculateTrickPoints(cards: CardData[]): number {
-    return cards.reduce((sum: number, card: CardData) => {
-      if (card.number === 5) return sum + 5;
-      if (card.number === 10 || card.number === 13) return sum + 10;
-      return sum;
-    }, 0);
-  }
-
+  // calculateTrickPoints(cards: CardData[]): number {
+  //   return this.scoreService.calculateTrickPoints(cards);
+  // }
 }

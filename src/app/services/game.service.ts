@@ -48,25 +48,25 @@ export class GameService {
   ) {}
 
   initializeGame(): void {
-    this.players = this.playerService.initializePlayers();
-    this.players[0].isDealer = true;
+    this.players = this.playerService.getPlayers();
+    this.playerService.rotateDealer();
     this.startNewHand();
   }
 
   startNewHand() {
     if (this.currentPhase === 'Dealing' || this.currentPhase === 'HandRecap') {
-      console.log('Starting new hand');
-      this.handNumber++;
+      this.scoreService.finalizeHandScore(); // Finalize the previous hand if it exists
+      const handNumber = this.scoreService.getAllHands().length + 1;
       const deck = this.deckService.createDeck();
       this.deckService.shuffleDeck(deck);
-      this.playerService.dealCards(this.players, deck);
+      this.playerService.dealCards(deck);
       this.widow = deck.slice(-4);
       this.currentPhase = 'Bidding';
 
       const dealer = this.players.find(p => p.isDealer);
       if (dealer) {
         this.scoreService.initializeHand(
-          this.handNumber,
+          handNumber,
           dealer,
           null,
           0,
@@ -102,6 +102,18 @@ export class GameService {
     }
   }
 
+  updateTrickScore(winnerPlayer: Player, cards: CardData[]): void {
+    const currentHand = this.scoreService.getCurrentHand();
+    if (currentHand) {
+      this.scoreService.updateTrickScore(winnerPlayer, cards);
+      //console.log(`Trick won by ${winnerPlayer.name} (Team ${winnerPlayer.team})`);
+
+      if (currentHand.tricks.length === 9) {
+        //console.log(`GoDown captured by ${winnerPlayer.name} (Team ${winnerPlayer.team})`);
+      }
+    }
+  }
+
   startBidding() {
     this.biddingStarted = true;
     const startingPlayerIndex = (this.players.findIndex(p => p.name === this.gameMetadata.dealer) + 1) % this.players.length;
@@ -131,9 +143,11 @@ export class GameService {
   }
 
   private finishHand() {
-    this.scoreService.finalizeHandScore();
-    this.scoreService.refreshScoreData();
-
+    if (!this.scoreService.getCurrentHand()?.isFinalized) {
+      this.scoreService.finalizeHandScore();
+    }
+    // Remove the call to refreshScoreData as it no longer exists
+  
     if (this.scoreService.isGameOver()) {
       this.currentPhase = 'GameOver';
     } else {
@@ -143,8 +157,8 @@ export class GameService {
 
   finalizeHandScore(): void {
     this.scoreService.finalizeHandScore();
-    // Log the current state (remove this in production)
-    console.log('Current game score:', this.scoreService.getTotalGameScore());
+    // Use getGameScore instead of getTotalGameScore
+    //console.log('Current game score:', this.scoreService.getGameScore().gameScore);
   }
 
   getScoreCard(): GameScore {
@@ -161,9 +175,12 @@ export class GameService {
   }
 
   initializePlayers(): Player[] {
-    this.players = this.playerService.initializePlayers();
-    this.players[0].isDealer = true;
-    this.gameMetadata.dealer = this.players[0].name;
+    this.players = this.playerService.getPlayers();
+    const firstPlayer = this.playerService.getPlayerBySeat('A1');
+    if (firstPlayer) {
+      firstPlayer.isDealer = true;
+      this.gameMetadata.dealer = firstPlayer.name;
+    }
     this.currentPhase = 'Dealing';
     return this.players;
   }
@@ -186,7 +203,6 @@ export class GameService {
 
   redealHand() {
     if (this.currentPhase === 'Bidding') {
-      console.log('Redealing hand');
       this.currentPhase = 'Dealing';
       this.startNewHand();
     }
@@ -199,7 +215,6 @@ export class GameService {
       if (winningBid !== null) {
         this.updateGameState(bidWinner, winningBid);
       } else {
-        console.error('Winning bid is null');
       }
       this.currentPhase = 'SelectingGoDown';
       this.addWidowToWinnerHand(bidWinner);
@@ -218,11 +233,15 @@ export class GameService {
       player.hand = player.hand.filter(card => !selectedCards.includes(card));
       this.gameMetadata.goDown = selectedCards;
       
-      const goDownPoints = this.trickService.calculateTrickPoints(selectedCards);
+      const goDownPoints = this.scoreService.calculateTrickPoints(selectedCards);
       this.scoreService.setGoDownInfo(player, goDownPoints);
       
       this.currentPhase = 'SelectingTrump';
     }
+  }
+  
+  calculateGoDownPoints(cards: CardData[]): number {
+    return this.scoreService.calculateTrickPoints(cards);
   }
 
   setTrump(trump: string) {
@@ -249,16 +268,13 @@ export class GameService {
     if (this.currentPhase !== 'PlayingTricks' || 
         player.name !== this.gameMetadata.currentPlayer ||
         this.trickService.getTrickSize() === 4) {
-      console.log('Invalid play attempt:', player.name, this.gameMetadata.currentPlayer);
       return false;
     }
   
     if (!this.trickService.isValidPlay(player, card)) {
-      console.log('Invalid card play:', card);
       return false;
     }
   
-    console.log('Playing card:', player.name, card);
     this.trickService.playCard(player, card);
     player.hand = player.hand.filter(c => c !== card);
   
@@ -271,7 +287,6 @@ export class GameService {
       this.moveToNextPlayer();
     }
   
-    console.log('Current player after play:', this.gameMetadata.currentPlayer);
     return true;
   }
 
@@ -283,13 +298,22 @@ export class GameService {
     const currentPlayerIndex = this.players.findIndex(p => p.name === this.gameMetadata.currentPlayer);
     const nextPlayerIndex = (currentPlayerIndex + 1) % 4;
     this.gameMetadata.currentPlayer = this.players[nextPlayerIndex].name;
-    console.log('Moving to next player:', this.gameMetadata.currentPlayer);
   }
 
   prepareNextHand() {
     this.rotateDealer();
-    this.resetHandState();
+    this.resetCurrentHandState();
     this.currentPhase = 'Dealing';
+  }
+
+  private resetCurrentHandState() {
+    this.trickNumber = 0;
+    this.playedTricks = [];
+    this.players.forEach(p => p.tricksTaken = 0);
+    this.gameMetadata.bidWinner = null;
+    this.gameMetadata.winningBid = null;
+    this.gameMetadata.trump = null;
+    this.gameMetadata.goDown = [];
   }
 
   private resetHandState() {

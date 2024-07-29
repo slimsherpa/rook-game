@@ -25,7 +25,8 @@ type ViewOption = Seat | 'God';
             [currentCard]="playedCards[arrangedPlayers[2].name]"
             [tricksTaken]="tricksTaken[arrangedPlayers[2].name]"
             [showHand]="arrangedPlayers[2].seat === selectedPlayerView"
-            [trump]="getTrump()">
+            [trump]="getTrump()"
+            [isCurrentPlayer]="isCurrentPlayer(arrangedPlayers[2])">
           </app-mini-player>
         </div>
         <div class="middle-players">
@@ -39,7 +40,8 @@ type ViewOption = Seat | 'God';
             [currentCard]="playedCards[arrangedPlayers[1].name]"
             [tricksTaken]="tricksTaken[arrangedPlayers[1].name]"
             [showHand]="arrangedPlayers[1].seat === selectedPlayerView"
-            [trump]="getTrump()">
+            [trump]="getTrump()"
+            [isCurrentPlayer]="isCurrentPlayer(arrangedPlayers[1])">
           </app-mini-player>
           </div>
           <div class="right-player">
@@ -52,7 +54,8 @@ type ViewOption = Seat | 'God';
             [currentCard]="playedCards[arrangedPlayers[3].name]"
             [tricksTaken]="tricksTaken[arrangedPlayers[3].name]"
             [showHand]="arrangedPlayers[3].seat === selectedPlayerView"
-            [trump]="getTrump()">
+            [trump]="getTrump()"
+            [isCurrentPlayer]="isCurrentPlayer(arrangedPlayers[3])">
           </app-mini-player>
           </div>
         </div>
@@ -66,7 +69,8 @@ type ViewOption = Seat | 'God';
           [currentCard]="playedCards[arrangedPlayers[0].name]"
           [tricksTaken]="tricksTaken[arrangedPlayers[0].name]"
           [showHand]="arrangedPlayers[0].seat === selectedPlayerView"
-          [trump]="getTrump()">
+          [trump]="getTrump()"
+          [isCurrentPlayer]="isCurrentPlayer(arrangedPlayers[0])">
         </app-mini-player>
       </ng-container>
       <ng-template #noBottomPlayer>
@@ -113,12 +117,15 @@ export class GameBoardLayoutComponent implements OnInit {
 
   isDealerForPlayer(player: Player): boolean {
     const isDealer = player.name === this.gameMetadata.dealer;
-    console.log(`Is ${player.name} (${player.seat}) dealer?`, isDealer, 'Current dealer:', this.gameMetadata.dealer);
     return isDealer;
   }
 
   isBidWinnerForPlayer(player: Player): boolean {
     return player.name === this.gameMetadata.bidWinner;
+  }
+
+  isCurrentPlayer(player: Player): boolean {
+    return player.name === this.currentPlayer;
   }
 
   arrangePlayersView() {

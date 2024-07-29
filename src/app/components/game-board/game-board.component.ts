@@ -11,7 +11,7 @@ import { GameStatusComponent } from '../game-status/game-status.component';
 import { HandStatusComponent } from '../hand-status/hand-status.component';
 import { GameService, GamePhase, TrickRecap } from '../../services/game.service';
 import { PlayerService, Player, Team, Seat } from '../../services/player.service';
-import { GameScore, HandScore } from '../../services/score.service';
+import { HandScore, ScoreService, GameScore } from '../../services/score.service';
 import { MiniPlayerComponent } from '../mini-player/mini-player.component';
 import { GameBoardLayoutComponent } from '../game-board-layout/game-board-layout.component';
 import { SelectPlayerViewComponent } from '../select-player-view/select-player-view.component';
@@ -55,7 +55,8 @@ export class GameBoardComponent implements OnInit {
 
   constructor(
     public gameService: GameService,
-    private playerService: PlayerService
+    private playerService: PlayerService,
+    private scoreService: ScoreService
   ) {}
 
   ngOnInit() {
@@ -115,8 +116,6 @@ export class GameBoardComponent implements OnInit {
   private updateGameState() {
     this.players = this.gameService.getPlayers();
     this.gameMetadata = this.gameService.getGameMetadata();
-    console.log('GameBoard - Updated gameMetadata:', this.gameMetadata);
-    console.log('GameBoard - Current dealer:', this.gameMetadata.dealer);
     this.currentPlayer = this.gameService.getCurrentPlayer();
     this.currentPhase = this.gameService.getCurrentPhase();
     this.playedTricks = this.gameService.getPlayedTricks();
@@ -125,17 +124,19 @@ export class GameBoardComponent implements OnInit {
     
     const currentHand = this.gameService.getCurrentHand();
     if (currentHand) {
-      this.goDownCapturedBy = currentHand.goDownCapturedBy || '';
-      this.goDownPoints = currentHand.goDownPoints || 0;
-    }
-    if (this.currentPhase === 'HandRecap') {
-      this.finishHand();
+      this.goDownCapturedBy = currentHand.goDown.capturedBy || '';
+      this.goDownPoints = currentHand.goDown.points || 0;
     }
   }
-  
-  finishHand() {
-    this.gameService.finalizeHandScore();
-    this.updateGameState();
+
+  getGoDownCapturedBy(): string {
+    const currentHand = this.gameService.getCurrentHand();
+    return currentHand ? currentHand.goDown.capturedBy : '';
+  }
+
+  getGoDownPoints(): number {
+    const currentHand = this.gameService.getCurrentHand();
+    return currentHand ? currentHand.goDown.points : 0;
   }
 
   getScoreCard(): GameScore {
@@ -148,29 +149,19 @@ export class GameBoardComponent implements OnInit {
   }
 
   getRunningScore(team: Team, trickIndex: number): number {
-    const playedTricks = this.gameService.getPlayedTricks().slice(0, trickIndex + 1);
-    let score = playedTricks.reduce((sum, trick) => {
-      if (trick.winnerTeam === team) {
-        return sum + trick.points;
-      }
-      return sum;
-    }, 0);
-
-    // Add 20 points bonus if this team has won 5 or more tricks
-    const teamTricks = playedTricks.filter(trick => trick.winnerTeam === team).length;
-    if (teamTricks >= 5) {
-      score += 20;
+    const currentHand = this.gameService.getCurrentHand();
+    if (currentHand) {
+      return this.scoreService.getRunningScore(team, trickIndex, currentHand);
     }
-
-    return score;
+    return 0;
   }
 
   isFifthTrickForTeam(trickIndex: number, team: Team): boolean {
-    const teamTricks = this.gameService.getPlayedTricks()
-      .slice(0, trickIndex + 1)
-      .filter(trick => trick.winnerTeam === team)
-      .length;
-    return teamTricks === 5;
+    const currentHand = this.gameService.getCurrentHand();
+    if (currentHand) {
+      return this.scoreService.getTeamTricksCount(team, currentHand, trickIndex + 1) === 5;
+    }
+    return false;
   }
 
   onPlayerSelected(playerSeat: string) {
