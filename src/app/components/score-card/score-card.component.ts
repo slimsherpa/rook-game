@@ -33,7 +33,7 @@ export class ScoreCardComponent implements OnChanges {
 
   getTeamScore(hand: HandScore, team: 'teamA' | 'teamB'): string {
     const actualPoints = team === 'teamA' ? hand.actualPointsA : hand.actualPointsB;
-    const finalScore = hand.handScore[team];
+    const finalScore = team === 'teamA' ? hand.scoreA : hand.scoreB;
     
     if (actualPoints !== finalScore) {
       return `${this.formatScore(actualPoints)} (${this.formatScore(finalScore)})`;

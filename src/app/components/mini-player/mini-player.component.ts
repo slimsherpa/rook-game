@@ -47,9 +47,6 @@ export class MiniPlayerComponent {
   @Input() isCurrentPlayer: boolean = false;
   
   ngOnChanges(changes: SimpleChanges) {
-    console.log('MiniPlayer changes:', changes);
-    console.log('MiniPlayer - player:', this.player);
-    console.log('MiniPlayer - isDealer:', this.isDealer);
   }
 
   get displayBid(): string | null {

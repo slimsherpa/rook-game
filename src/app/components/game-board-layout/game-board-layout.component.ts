@@ -117,7 +117,6 @@ export class GameBoardLayoutComponent implements OnInit {
 
   isDealerForPlayer(player: Player): boolean {
     const isDealer = player.name === this.gameMetadata.dealer;
-    console.log(`Is ${player.name} (${player.seat}) dealer?`, isDealer, 'Current dealer:', this.gameMetadata.dealer);
     return isDealer;
   }
 

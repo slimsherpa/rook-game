@@ -55,7 +55,6 @@ export class GameService {
 
   startNewHand() {
     if (this.currentPhase === 'Dealing' || this.currentPhase === 'HandRecap') {
-      console.log('Starting new hand');
       this.handNumber++;
       const deck = this.deckService.createDeck();
       this.deckService.shuffleDeck(deck);
@@ -131,9 +130,11 @@ export class GameService {
   }
 
   private finishHand() {
-    this.scoreService.finalizeHandScore();
+    if (!this.scoreService.getCurrentHand()?.isFinalized) {
+      this.scoreService.simpleFinalizeHandScore();
+    }
     this.scoreService.refreshScoreData();
-
+  
     if (this.scoreService.isGameOver()) {
       this.currentPhase = 'GameOver';
     } else {
@@ -142,7 +143,7 @@ export class GameService {
   }
 
   finalizeHandScore(): void {
-    this.scoreService.finalizeHandScore();
+    this.scoreService.simpleFinalizeHandScore();
     // Log the current state (remove this in production)
     console.log('Current game score:', this.scoreService.getTotalGameScore());
   }
@@ -186,7 +187,6 @@ export class GameService {
 
   redealHand() {
     if (this.currentPhase === 'Bidding') {
-      console.log('Redealing hand');
       this.currentPhase = 'Dealing';
       this.startNewHand();
     }
@@ -199,7 +199,6 @@ export class GameService {
       if (winningBid !== null) {
         this.updateGameState(bidWinner, winningBid);
       } else {
-        console.error('Winning bid is null');
       }
       this.currentPhase = 'SelectingGoDown';
       this.addWidowToWinnerHand(bidWinner);
@@ -249,16 +248,13 @@ export class GameService {
     if (this.currentPhase !== 'PlayingTricks' || 
         player.name !== this.gameMetadata.currentPlayer ||
         this.trickService.getTrickSize() === 4) {
-      console.log('Invalid play attempt:', player.name, this.gameMetadata.currentPlayer);
       return false;
     }
   
     if (!this.trickService.isValidPlay(player, card)) {
-      console.log('Invalid card play:', card);
       return false;
     }
   
-    console.log('Playing card:', player.name, card);
     this.trickService.playCard(player, card);
     player.hand = player.hand.filter(c => c !== card);
   
@@ -271,7 +267,6 @@ export class GameService {
       this.moveToNextPlayer();
     }
   
-    console.log('Current player after play:', this.gameMetadata.currentPlayer);
     return true;
   }
 
@@ -283,7 +278,6 @@ export class GameService {
     const currentPlayerIndex = this.players.findIndex(p => p.name === this.gameMetadata.currentPlayer);
     const nextPlayerIndex = (currentPlayerIndex + 1) % 4;
     this.gameMetadata.currentPlayer = this.players[nextPlayerIndex].name;
-    console.log('Moving to next player:', this.gameMetadata.currentPlayer);
   }
 
   prepareNextHand() {

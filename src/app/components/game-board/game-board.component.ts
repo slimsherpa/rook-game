@@ -115,8 +115,6 @@ export class GameBoardComponent implements OnInit {
   private updateGameState() {
     this.players = this.gameService.getPlayers();
     this.gameMetadata = this.gameService.getGameMetadata();
-    console.log('GameBoard - Updated gameMetadata:', this.gameMetadata);
-    console.log('GameBoard - Current dealer:', this.gameMetadata.dealer);
     this.currentPlayer = this.gameService.getCurrentPlayer();
     this.currentPhase = this.gameService.getCurrentPhase();
     this.playedTricks = this.gameService.getPlayedTricks();
@@ -128,14 +126,6 @@ export class GameBoardComponent implements OnInit {
       this.goDownCapturedBy = currentHand.goDownCapturedBy || '';
       this.goDownPoints = currentHand.goDownPoints || 0;
     }
-    if (this.currentPhase === 'HandRecap') {
-      this.finishHand();
-    }
-  }
-  
-  finishHand() {
-    this.gameService.finalizeHandScore();
-    this.updateGameState();
   }
 
   getScoreCard(): GameScore {
