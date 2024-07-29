@@ -1,18 +1,24 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { GameScore, HandScore } from '../../services/score.service';
+import { ScoreService, HandScore, GameScore } from '../../services/score.service';
+import { PlayerService, Team } from '../../services/player.service';
 
 @Component({
   selector: 'app-score-card',
-  standalone: true,
-  imports: [CommonModule],
   templateUrl: './score-card.component.html',
-  styleUrls: ['./score-card.component.scss']
+  styleUrls: ['./score-card.component.scss'],
+  standalone: true,
+  imports: [CommonModule]
 })
 export class ScoreCardComponent implements OnChanges {
   @Input() gameScore!: GameScore;
   
-  displayedHands: (HandScore & { handNumber: number })[] = [];
+  displayedHands: HandScore[] = [];
+
+  constructor(
+    private scoreService: ScoreService,
+    private playerService: PlayerService
+  ) {}
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['gameScore']) {
@@ -21,31 +27,22 @@ export class ScoreCardComponent implements OnChanges {
   }
 
   private updateDisplayedHands() {
-    this.displayedHands = this.gameScore.hands.map((hand, index) => ({
-      ...hand,
-      handNumber: index + 1
-    }));
+    this.displayedHands = this.scoreService.getAllHands();
   }
 
   formatScore(score: number): string {
     return score >= 0 ? `+${score}` : `${score}`;
   }
 
-  getTeamScore(hand: HandScore, team: 'teamA' | 'teamB'): string {
-    const actualPoints = team === 'teamA' ? hand.actualPointsA : hand.actualPointsB;
-    const finalScore = team === 'teamA' ? hand.scoreA : hand.scoreB;
-    
-    if (actualPoints !== finalScore) {
-      return `${this.formatScore(actualPoints)} (${this.formatScore(finalScore)})`;
-    }
-    return this.formatScore(actualPoints);
+  getHandScoreForTeam(team: Team, hand: HandScore): number {
+    return this.scoreService.getHandScoreForTeam(team, hand);
   }
 
-  isBidWinner(hand: HandScore, team: 'teamA' | 'teamB'): boolean {
-    return this.getTeamForPlayer(hand.bidWinner) === team;
+  isBidWinner(hand: HandScore, team: Team): boolean {
+    return this.playerService.getTeamForPlayer(hand.bidWinner) === team;
   }
 
-  private getTeamForPlayer(playerName: string): 'teamA' | 'teamB' {
-    return playerName.startsWith('A') ? 'teamA' : 'teamB';
+  getTotalScore(team: Team): number {
+    return this.gameScore.gameScore[team === 'A' ? 'teamA' : 'teamB'];
   }
 }

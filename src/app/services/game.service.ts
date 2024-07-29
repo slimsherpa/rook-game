@@ -48,24 +48,25 @@ export class GameService {
   ) {}
 
   initializeGame(): void {
-    this.players = this.playerService.initializePlayers();
-    this.players[0].isDealer = true;
+    this.players = this.playerService.getPlayers();
+    this.playerService.rotateDealer();
     this.startNewHand();
   }
 
   startNewHand() {
     if (this.currentPhase === 'Dealing' || this.currentPhase === 'HandRecap') {
-      this.handNumber++;
+      this.scoreService.finalizeHandScore(); // Finalize the previous hand if it exists
+      const handNumber = this.scoreService.getAllHands().length + 1;
       const deck = this.deckService.createDeck();
       this.deckService.shuffleDeck(deck);
-      this.playerService.dealCards(this.players, deck);
+      this.playerService.dealCards(deck);
       this.widow = deck.slice(-4);
       this.currentPhase = 'Bidding';
 
       const dealer = this.players.find(p => p.isDealer);
       if (dealer) {
         this.scoreService.initializeHand(
-          this.handNumber,
+          handNumber,
           dealer,
           null,
           0,
@@ -101,6 +102,18 @@ export class GameService {
     }
   }
 
+  updateTrickScore(winnerPlayer: Player, cards: CardData[]): void {
+    const currentHand = this.scoreService.getCurrentHand();
+    if (currentHand) {
+      this.scoreService.updateTrickScore(winnerPlayer, cards);
+      //console.log(`Trick won by ${winnerPlayer.name} (Team ${winnerPlayer.team})`);
+
+      if (currentHand.tricks.length === 9) {
+        //console.log(`GoDown captured by ${winnerPlayer.name} (Team ${winnerPlayer.team})`);
+      }
+    }
+  }
+
   startBidding() {
     this.biddingStarted = true;
     const startingPlayerIndex = (this.players.findIndex(p => p.name === this.gameMetadata.dealer) + 1) % this.players.length;
@@ -131,9 +144,9 @@ export class GameService {
 
   private finishHand() {
     if (!this.scoreService.getCurrentHand()?.isFinalized) {
-      this.scoreService.simpleFinalizeHandScore();
+      this.scoreService.finalizeHandScore();
     }
-    this.scoreService.refreshScoreData();
+    // Remove the call to refreshScoreData as it no longer exists
   
     if (this.scoreService.isGameOver()) {
       this.currentPhase = 'GameOver';
@@ -143,9 +156,9 @@ export class GameService {
   }
 
   finalizeHandScore(): void {
-    this.scoreService.simpleFinalizeHandScore();
-    // Log the current state (remove this in production)
-    console.log('Current game score:', this.scoreService.getTotalGameScore());
+    this.scoreService.finalizeHandScore();
+    // Use getGameScore instead of getTotalGameScore
+    //console.log('Current game score:', this.scoreService.getGameScore().gameScore);
   }
 
   getScoreCard(): GameScore {
@@ -162,9 +175,12 @@ export class GameService {
   }
 
   initializePlayers(): Player[] {
-    this.players = this.playerService.initializePlayers();
-    this.players[0].isDealer = true;
-    this.gameMetadata.dealer = this.players[0].name;
+    this.players = this.playerService.getPlayers();
+    const firstPlayer = this.playerService.getPlayerBySeat('A1');
+    if (firstPlayer) {
+      firstPlayer.isDealer = true;
+      this.gameMetadata.dealer = firstPlayer.name;
+    }
     this.currentPhase = 'Dealing';
     return this.players;
   }
@@ -217,11 +233,15 @@ export class GameService {
       player.hand = player.hand.filter(card => !selectedCards.includes(card));
       this.gameMetadata.goDown = selectedCards;
       
-      const goDownPoints = this.trickService.calculateTrickPoints(selectedCards);
+      const goDownPoints = this.scoreService.calculateTrickPoints(selectedCards);
       this.scoreService.setGoDownInfo(player, goDownPoints);
       
       this.currentPhase = 'SelectingTrump';
     }
+  }
+  
+  calculateGoDownPoints(cards: CardData[]): number {
+    return this.scoreService.calculateTrickPoints(cards);
   }
 
   setTrump(trump: string) {
@@ -282,8 +302,18 @@ export class GameService {
 
   prepareNextHand() {
     this.rotateDealer();
-    this.resetHandState();
+    this.resetCurrentHandState();
     this.currentPhase = 'Dealing';
+  }
+
+  private resetCurrentHandState() {
+    this.trickNumber = 0;
+    this.playedTricks = [];
+    this.players.forEach(p => p.tricksTaken = 0);
+    this.gameMetadata.bidWinner = null;
+    this.gameMetadata.winningBid = null;
+    this.gameMetadata.trump = null;
+    this.gameMetadata.goDown = [];
   }
 
   private resetHandState() {

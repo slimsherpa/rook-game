@@ -34,7 +34,7 @@
           <div class="go-down-info">
             <p>Winner: <span class="winner">{{ handScore.goDown.capturedBy }} (Team {{ getGoDownWinnerTeam() }})</span></p>
             <p>Points: <span class="points">{{ handScore.goDown.points }}</span></p>
-            <p class="running-score">A={{ getTeamScore('A') }} B={{ getTeamScore('B') }}</p>
+            <p class="running-score">A={{ getTeamCapturedPoints('A') }} B={{ getTeamCapturedPoints('B') }}</p>
           </div>
         </div>
       </div>
