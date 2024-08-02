@@ -23,7 +23,8 @@
              [cdkDragData]="card"
              (cdkDragStarted)="onDragStarted()"
              (cdkDragEnded)="onDragEnded()"
-             [style.cursor]="isDragging ? 'move' : (isCardSelectable(card) ? 'pointer' : 'default')">
+             [style.cursor]="isDragging ? 'move' : (isCardSelectable(card) ? 'pointer' : 'default')"
+             [class.revealed]="i < revealedCardCount">
           <app-card 
             [card]="card" 
             [selectable]="isCardSelectable(card)"
@@ -37,6 +38,10 @@
         </div>
       </div>
     </div>
+
+    <!-- <button (click)="manualReveal()" class="cyberpunk-button">
+      Reveal Cards
+    </button> -->
   
     <div class="action-buttons" *ngIf="hasVisibleActionButtons()">
       <button *ngIf="isDealer && currentPhase === 'Dealing'" 

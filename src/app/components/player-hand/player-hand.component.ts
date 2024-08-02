@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
@@ -42,7 +42,8 @@ export class PlayerHandComponent implements OnChanges {
   selectedTrump: string | null = null;
   selectedCard: CardData | null = null;
   revealedCardCount: number = 0;
-  revealedCards: boolean[] = [];
+  private revealInterval: any;
+  private previousHandLength: number = 0;
   isDragging: boolean = false;
   //selectedPlayerView: ViewOption = 'A1';
 
@@ -50,10 +51,14 @@ export class PlayerHandComponent implements OnChanges {
     private biddingService: BiddingService, 
     public gameService: GameService, 
     private scoreService: ScoreService,
-    private trickService: TrickService
+    private trickService: TrickService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnChanges(changes: SimpleChanges) {
+    if (changes['player'] || changes['currentPhase']) {
+      this.checkAndRevealCards();
+    }
     if (changes['currentPhase'] || changes['selectedPlayerSeat']) {
       if (this.currentPhase === 'Dealing') {
         // Reset local state when a new hand starts
@@ -68,6 +73,36 @@ export class PlayerHandComponent implements OnChanges {
   }
 
   private isVisible: boolean = false;
+
+  private checkAndRevealCards() {
+    if (this.player && this.player.hand) {
+      const currentHandLength = this.player.hand.length;
+      if (currentHandLength > 0 && currentHandLength !== this.previousHandLength) {
+        // Cards have been dealt or changed
+        this.previousHandLength = currentHandLength;
+        this.manualReveal(); // Use the working reveal method
+      }
+    }
+  }
+
+  manualReveal() {
+    this.revealedCardCount = 0;
+    this.revealCards();
+  }
+
+  private revealCards() {
+    if (this.player && this.player.hand && this.player.hand.length > 0) {
+      clearInterval(this.revealInterval);
+      this.revealInterval = setInterval(() => {
+        if (this.revealedCardCount < this.player.hand.length) {
+          this.revealedCardCount++;
+          this.cdr.detectChanges();
+        } else {
+          clearInterval(this.revealInterval);
+        }
+      }, 333); // Reveals 3 cards per second
+    }
+  }
 
   private updateVisibility() {
     this.isVisible = this.selectedPlayerView === this.player.seat;
