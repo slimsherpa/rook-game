@@ -9,51 +9,50 @@ app-player-hand {
 .player-hand {
   display: flex;
   flex-direction: column;
-  background-color: var(--color-bg-light);
-  border: 2px solid var(--color-accent);
-  border-radius: 10px;
-  gap: 10px;
+  // background-color: var(--color-bg-light);
+  // border: 2px solid var(--color-accent);
+  // border-radius: 10px;
+  // gap: 10px;
   padding: 20px;
-  margin-bottom: 10px; // Add some space between visible hands
+  // margin-bottom: 10px; // Add some space between visible hands
 
-    .player-info {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 10px;
-      }
-  
-    .player-name {
-      color: var(--color-accent);
-      font-family: var(--font-accent);
-      font-size: 1.5rem;
-      margin-bottom: 0px;
-      text-align: left;
-    }
+  .player-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
 
-    .dealer-indicator,
-        .bid-winner-indicator {
-            font-size: 0.8rem;
-            font-weight: 700;
-            padding: 2px 6px;
-            border-radius: 4px;
-            margin-left: 10px;
-        }
+  .player-name {
+    color: var(--color-accent);
+    font-family: var(--font-accent);
+    font-size: 1.5rem;
+    margin-bottom: 0px;
+    text-align: left;
+  }
 
-        .dealer-indicator {
-            background-color: var(--color-secondary);
-            color: var(--color-bg-dark);
-            opacity: 0.8;
-        }
+  .dealer-indicator,
+  .bid-winner-indicator {
+    font-size: 0.8rem;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-left: 10px;
+  }
 
-        .bid-winner-indicator {
-            background-color: white;
-            color: var(--color-primary);
-            border: 1px solid var(--color-primary);
-        }
-    }
+  .dealer-indicator {
+    background-color: var(--color-secondary);
+    color: var(--color-bg-dark);
+    opacity: 0.8;
+  }
 
-    .tricks-indicator {
+  .bid-winner-indicator {
+    background-color: white;
+    color: var(--color-primary);
+    border: 1px solid var(--color-primary);
+  }
+
+  .tricks-indicator {
     display: flex;
     align-items: center;
     font-size: 1.2rem;
@@ -62,280 +61,283 @@ app-player-hand {
     padding: 4px 8px;
     border-radius: 20px;
     opacity: 0.7;
-    }
 
-    .tricks-indicator .material-symbols-outlined {
-    font-size: 1.6rem;
-    margin-right: 4px;
-    transform: rotate(180deg);
+    .material-symbols-outlined {
+      font-size: 1.6rem;
+      margin-right: 4px;
+      transform: rotate(180deg);
     }
+  }
+
+  .hand-container {
+    max-width: 100%;
+    margin: 0 auto;
+    overflow-x: visible;
+    padding: 10px 0;
+  }
+
+  .hand {
+    display: flex;
+    justify-content: center;
+    flex-wrap: nowrap;
+    gap: 0px;
+    min-height: 90px;
+    margin-top: 20px;
+    padding: 0 20px;
   
-    .hand-container {
-      max-width: 100%;
-      margin: 0 auto;
-      overflow-x: visible; // Change from auto to visible
-      padding: 10px 0;
-    }
+    .card-slot {
+      transition: transform 0.1s ease-in-out, z-index 0.1s ease-in-out;
+      margin-right: -10px;
+      position: relative;
   
-    .hand {
-      display: flex;
-      justify-content: center;
-      flex-wrap: nowrap; // Change from wrap to nowrap
-      gap: 0px; // Reduce gap to allow cards to overlap
-      min-height: 90px;
-      margin-top: 20px;
-      padding: 0 20px; // Add horizontal padding
-  
-      .card-slot {
-        transition: transform 0.1s ease-in-out, z-index 0.1s ease-in-out;
-        margin-right: -10px; // Negative margin for card overlap
-        position: relative; // Add this to enable z-index
-  
-        &:hover,
-        &:focus,
-        &.selected {
-          transform: translateY(-10px) scale(1.05);
-          z-index: 10; // Bring the card to the front
-        }
-  
-        &:last-child {
-          margin-right: 0; // Remove negative margin for the last card
-        }
-  
-        &.cdk-drag-animating {
-          transition: transform 250ms cubic-bezier(0, 0, 0.2, 1), z-index 250ms cubic-bezier(0, 0, 0.2, 1);
-        }
+      &:hover,
+      &:focus {
+        transform: translateY(-10px) scale(1.05);
+        z-index: 10;
       }
-      
-        .card-placeholder {
-          background-color: rgba(var(--color-accent-rgb), 0.2);
-          border: 2px dashed var(--color-accent);
-          border-radius: 8px;
-          cursor: grabbing;
-        }
+  
+      &.selected {
+        transform: translateY(-10px) scale(1.05);
+        z-index: 10;
       }
-      
-      .cdk-drag-preview {
-        box-sizing: border-box;
-        border-radius: 4px;
-        // box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
-        //             0 8px 10px 1px rgba(0, 0, 0, 0.14),
-        //             0 3px 14px 2px rgba(0, 0, 0, 0.12);
-        //             cursor: grabbing;
-      }
-      
-      .cdk-drag-placeholder {
-        opacity: 0.3;
-        background: rgba(var(--color-accent-rgb), 0.2);
-        border: 2px dashed var(--color-accent);
-        border-radius: 8px;
-      }
-      
-      .cdk-drag-animating {
-        transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
-        cursor: grabbing;
+  
+      &:last-child {
+        margin-right: 0;
       }
 
-      .cdk-drag-preview {
-        z-index: 1000; // Ensure dragged card appears above others
+      &.cdk-drag-preview {
+        cursor: move !important;
       }
   
-    .action-buttons {
-        margin-top: 10px;
-        display: flex;
-        justify-content: center;
-        gap: 10px;
-        min-height: 0; // Ensures it collapses when empty
-        
-        &:empty {
-          display: none; // Hides the container when it's empty
-        }
+      &.cdk-drag-placeholder {
+        cursor: move !important;
       }
+    }
+
+    &.dragging * {
+      cursor: move !important;
+    }
+    
+    .card-placeholder {
+      background-color: rgba(var(--color-accent-rgb), 0.2);
+      border: 2px dashed var(--color-accent);
+      border-radius: 8px;
+      cursor: move !important;
+    }
   
-    .cyberpunk-button {
-      background-color: var(--color-primary);
+    .cdk-drag-placeholder {
+      opacity: 0.3;
+      background: rgba(var(--color-accent-rgb), 0.2);
+      border: 2px dashed var(--color-accent);
+      border-radius: 8px;
+      width: 60px;
+      height: 80px;
+      cursor: move !important;
+    }
+  }
+
+  .action-buttons {
+    margin-top: 10px;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    min-height: 0;
+
+    &:empty {
+      display: none;
+    }
+  }
+
+  .cyberpunk-button {
+    background-color: var(--color-primary);
+    color: var(--color-text);
+    border: 2px solid var(--color-accent);
+    padding: 10px 20px;
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+
+    &:hover:not(:disabled) {
+      background-color: var(--color-accent);
+      color: var(--color-bg-dark);
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      &:hover {
+        background-color: var(--color-primary);
+        color: var(--color-text);
+      }
+    }
+
+    &.redeal {
+      background-color: var(--color-secondary);
+    }
+  }
+
+  .bidding-chips {
+    margin-top: 20px;
+    margin-left: auto;
+    margin-right: auto;
+    display: flex;
+    max-width: 450px;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+
+    .bid-button {
+      background-color: var(--color-bg-light);
       color: var(--color-text);
       border: 2px solid var(--color-accent);
-      padding: 10px 20px;
+      font-weight: bold;
       font-size: 1rem;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      transition: all 0.3s ease;
+      padding: 10px 15px;
       cursor: pointer;
-      position: relative;
-      overflow: hidden;
-  
-      &:hover:not(:disabled) {
+      transition: all 0.3s ease;
+
+      &:hover:not(:disabled):not(.not-turn):not(.invalid-bid) {
         background-color: var(--color-accent);
         color: var(--color-bg-dark);
+        box-shadow: 0 0 10px var(--color-accent);
       }
-  
-      &:disabled {
-        opacity: 0.5;
+
+      &:disabled,
+      &.not-turn,
+      &.invalid-bid {
         cursor: not-allowed;
-        &:hover {
-          background-color: var(--color-primary);
-          color: var(--color-text);
-        }
       }
-  
-      &.redeal {
-        background-color: var(--color-secondary);
+
+      &.not-turn {
+        opacity: 0.1;
+      }
+
+      &.invalid-bid {
+        opacity: 0.3;
+      }
+
+      &.selected {
+        background-color: var(--color-accent);
+        color: var(--color-bg-dark);
+        opacity: 1;
+
+        &:disabled,
+        &.not-turn {
+          opacity: 0.5;
+        }
       }
     }
-  
-    .bidding-chips {
-        margin-top: 20px;
-        margin-left: auto;
-        margin-right: auto;
-        display: flex;
-        max-width: 450px;
-        justify-content: center;
-        flex-wrap: wrap;
-        gap: 10px;
-    
-        .bid-button {
-            background-color: var(--color-bg-light);
-            color: var(--color-text);
-            border: 2px solid var(--color-accent);
-            font-weight: bold;
-            font-size: 1rem;
-            padding: 10px 15px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            
-            &:hover:not(:disabled):not(.not-turn):not(.invalid-bid) {
-              background-color: var(--color-accent);
-              color: var(--color-bg-dark);
-              box-shadow: 0 0 10px var(--color-accent);
-            }
-        
-            &:disabled,
-            &.not-turn,
-            &.invalid-bid {
-              cursor: not-allowed;
-            }
-        
-            &.not-turn {
-              opacity: 0.1;
-            }
-        
-            &.invalid-bid {
-              opacity: 0.3;
-            }
-        
-            &.selected {
-              background-color: var(--color-accent);
-              color: var(--color-bg-dark);
-              opacity: 1;
-            }
-        
-            &.selected:disabled,
-            &.selected.not-turn {
-              opacity: 0.5;
-            }
-          }
+  }
+
+  .trump-selection {
+    margin-top: 20px;
+    padding: 20px;
+    background-color: rgba(var(--color-accent-rgb), 0.1);
+    border: 2px solid var(--color-accent);
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(var(--color-accent-rgb), 0.3);
+
+    .trump-instruction {
+      color: var(--color-text);
+      font-size: 1.2rem;
+      text-align: center;
+      margin-bottom: 15px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      text-shadow: 0 0 5px var(--color-accent);
+    }
+
+    .trump-options {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .trump-button {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      border: 2px solid var(--color-accent);
+      font-weight: bold;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      background-color: var(--color-bg-light);
+
+      &::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: conic-gradient(
+          transparent,
+          rgba(255, 255, 255, 0.3),
+          transparent 30%
+        );
+        animation: rotate 4s linear infinite;
+      }
+
+      span {
+        position: relative;
+        z-index: 2;
+      }
+
+      &.red { --button-color: var(--card-red); }
+      &.yellow { --button-color: var(--card-yellow); }
+      &.green { --button-color: var(--card-green); }
+      &.black { --button-color: var(--card-black); }
+
+      &:not(.selected) {
+        color: var(--button-color);
+      }
+
+      &.selected {
+        background-color: var(--button-color);
+        color: var(--color-bg-dark);
+        box-shadow: 0 0 15px var(--button-color);
+      }
+    }
+
+    .action-buttons {
+      display: flex;
+      justify-content: center;
+
+      .confirm-trump {
+        font-size: 1.1rem;
+        padding: 12px 24px;
+        background-color: var(--color-accent);
+        color: var(--color-bg-dark);
+        border: none;
+        text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+
+        &:hover:not(:disabled) {
+          box-shadow: 0 0 20px var(--color-accent);
         }
-    
-      .trump-selection {
-        margin-top: 20px;
-        padding: 20px;
-        background-color: rgba(var(--color-accent-rgb), 0.1);
-        border: 2px solid var(--color-accent);
-        border-radius: 10px;
-        box-shadow: 0 0 15px rgba(var(--color-accent-rgb), 0.3);
-    
-        .trump-instruction {
-          color: var(--color-text);
-          font-size: 1.2rem;
-          text-align: center;
-          margin-bottom: 15px;
-          text-transform: uppercase;
-          letter-spacing: 1px;
-          text-shadow: 0 0 5px var(--color-accent);
-        }
-    
-        .trump-options {
-          display: flex;
-          justify-content: center;
-          gap: 15px;
-          margin-bottom: 20px;
-        }
-    
-        .trump-button {
-          width: 80px;
-          height: 80px;
-          border-radius: 50%;
-          border: 2px solid var(--color-accent);
-          font-weight: bold;
-          font-size: 16px;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          position: relative;
-          overflow: hidden;
-          background-color: var(--color-bg-light);
-    
-          &::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: conic-gradient(
-              transparent,
-              rgba(255, 255, 255, 0.3),
-              transparent 30%
-            );
-            animation: rotate 4s linear infinite;
-          }
-    
-          span {
-            position: relative;
-            z-index: 2;
-          }
-    
-          &.red { --button-color: var(--card-red); }
-          &.yellow { --button-color: var(--card-yellow); }
-          &.green { --button-color: var(--card-green); }
-          &.black { --button-color: var(--card-black); }
-    
-          &:not(.selected) {
-            color: var(--button-color);
-          }
-    
-          &.selected {
-            background-color: var(--button-color);
-            color: var(--color-bg-dark);
-            box-shadow: 0 0 15px var(--button-color);
-          }
-        }
-    
-        .action-buttons {
-          display: flex;
-          justify-content: center;
-    
-          .confirm-trump {
-            font-size: 1.1rem;
-            padding: 12px 24px;
-            background-color: var(--color-accent);
-            color: var(--color-bg-dark);
-            border: none;
-            text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
-            
-            &:hover:not(:disabled) {
-              box-shadow: 0 0 20px var(--color-accent);
-            }
-    
-            &:disabled {
-              opacity: 0.5;
-              cursor: not-allowed;
-            }
-          }
+
+        &:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
         }
       }
-    
-      @keyframes cardDrop {
-        0% { transform: translateY(-5px); }
-        100% { transform: translateY(0); }
-      }
+    }
+  }
+}
+
+@keyframes cardDrop {
+  0% { transform: translateY(-5px); }
+  100% { transform: translateY(0); }
+}
+
+@keyframes rotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

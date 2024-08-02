@@ -43,6 +43,7 @@ export class PlayerHandComponent implements OnChanges {
   selectedCard: CardData | null = null;
   revealedCardCount: number = 0;
   revealedCards: boolean[] = [];
+  isDragging: boolean = false;
   //selectedPlayerView: ViewOption = 'A1';
 
   constructor(
@@ -189,17 +190,22 @@ export class PlayerHandComponent implements OnChanges {
 
   // DRAG AND DROP FEATURE:
 
+  onDragStarted() {
+    this.isDragging = true;
+    document.body.style.cursor = 'move';
+  }
+
+  onDragEnded() {
+    this.isDragging = false;
+    document.body.style.cursor = 'default';
+  }
+
   drop(event: CdkDragDrop<CardData[]>) {
     if (event.previousIndex !== event.currentIndex) {
       moveItemInArray(this.player.hand, event.previousIndex, event.currentIndex);
-      // Trigger the animation manually
-      const item = event.item.element.nativeElement;
-      if (item && item.style) {
-        item.style.animation = 'none';
-        item.offsetHeight; // Trigger reflow
-        item.style.animation = '';
-      }
     }
+    this.isDragging = false;
+    document.body.style.cursor = 'default';
   }
 
   setGoDown() {

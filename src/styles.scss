@@ -21,6 +21,10 @@
   --font-accent: 'Orbitron', sans-serif;
 }
 
+body.cdk-drag-dragging {
+  cursor: grabbing !important; // Force grabbing cursor on the entire body while dragging
+}
+
 body {
   background-color: var(--color-bg-dark);
   color: var(--color-text);

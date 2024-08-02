@@ -12,21 +12,31 @@
     </div> -->
   
     <div class="hand-container">
-        <div class="hand" cdkDropList cdkDropListOrientation="horizontal" (cdkDropListDropped)="drop($event)">
-          <div class="card-slot" *ngFor="let card of player.hand; let i = index" cdkDrag [cdkDragData]="card">
-            <app-card 
-              [card]="card" 
-              [selectable]="isCardSelectable(card)"
-              [selected]="isCardSelected(card)"
-              [isTrump]="isTrumpCard(card)"
-              (click)="handleCardClick(card)"
-              [ngStyle]="{'opacity': currentPhase === 'PlayingTricks' && !isCardPlayable(card) ? 0.5 : 1}"
-              [ngClass]="{'disabled': currentPhase === 'PlayingTricks' && !isCardPlayable(card)}">
-            </app-card>
-            <div class="card-placeholder" *cdkDragPlaceholder></div>
-          </div>
+      <div class="hand" 
+           cdkDropList 
+           cdkDropListOrientation="horizontal" 
+           (cdkDropListDropped)="drop($event)"
+           [class.dragging]="isDragging">
+        <div class="card-slot" 
+             *ngFor="let card of player.hand; let i = index" 
+             cdkDrag 
+             [cdkDragData]="card"
+             (cdkDragStarted)="onDragStarted()"
+             (cdkDragEnded)="onDragEnded()"
+             [style.cursor]="isDragging ? 'move' : (isCardSelectable(card) ? 'pointer' : 'default')">
+          <app-card 
+            [card]="card" 
+            [selectable]="isCardSelectable(card)"
+            [selected]="isCardSelected(card)"
+            [isTrump]="isTrumpCard(card)"
+            (click)="handleCardClick(card)"
+            [ngStyle]="{'opacity': currentPhase === 'PlayingTricks' && !isCardPlayable(card) ? 0.5 : 1}"
+            [ngClass]="{'disabled': currentPhase === 'PlayingTricks' && !isCardPlayable(card)}">
+          </app-card>
+          <div class="card-placeholder" *cdkDragPlaceholder></div>
         </div>
       </div>
+    </div>
   
     <div class="action-buttons" *ngIf="hasVisibleActionButtons()">
       <button *ngIf="isDealer && currentPhase === 'Dealing'" 
